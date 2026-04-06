@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -19,8 +20,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	envLocal = "local"
+	envProd  = "prod"
+	envDev   = "dev"
+)
+
 func main() {
 	cfg := config.MustLoad()
+
+	log := setupLogger(cfg.Env)
+
+	log.Info("starting gofreight app", slog.String("env", cfg.Env))
+
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Database.Host,
 		cfg.Database.Port,
@@ -32,13 +44,15 @@ func main() {
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatalf("Failed to initialize database connection: %v", err)
+		log.Error("failed to initialize database connection", errField(err))
+		os.Exit(1)
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
+		log.Error("Failed to ping database", errField(err))
+		os.Exit(1)
 	}
-	log.Println("Successfully connected to PostgreSQL")
+	log.Info("Successfully connected to PostgreSQL")
 
 	queries := pg.New(db)
 	repo := repository.NewProductRepository(queries)
@@ -59,27 +73,46 @@ func main() {
 	defer stop()
 
 	go func() {
-		log.Printf("Starting HTTP server on %s\n", cfg.HTTPServer.Address)
-		log.Println("Server is ready to handle requests")
+		log.Info("Starting HTTP server", slog.String("address", cfg.HTTPServer.Address))
+		log.Info("Server is ready to handle requests")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("Failed to start server: %v", err)
+			log.Info("Failed to start server", errField(err))
 			stop()
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("Shutting down server...")
+	log.Info("Shutting down server...")
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+		log.Error("server forced to shutdown", errField(err))
 	}
 
 	if err := db.Close(); err != nil {
-		log.Printf("Error closing DB: %v", err)
+		log.Error("failed to close database", errField(err))
 	}
 
-	log.Println("Server gracefully stopped")
+	log.Info("Server gracefully stopped")
+}
+
+func setupLogger(env string) *slog.Logger {
+	var log *slog.Logger
+	switch env {
+	case envLocal:
+		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	case envDev:
+		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	case envProd:
+		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	default:
+		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	}
+	return log
+}
+
+func errField(err error) slog.Attr {
+	return slog.String("error", err.Error())
 }
