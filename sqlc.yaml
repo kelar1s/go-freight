@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "db/migrations/products"
+    queries: "db/queries/products"
+    gen:
+      go:
+        package: "pg"
+        out: "internal/products/repository/pg"
+        emit_interface: false
+        emit_json_tags: false
