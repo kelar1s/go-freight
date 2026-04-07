@@ -57,9 +57,9 @@ func main() {
 	queries := pg.New(db)
 	repo := repository.NewProductRepository(queries)
 	svc := service.NewProductService(repo)
-	productHandler := handler.NewProductHandler(svc)
+	productHandler := handler.NewProductHandler(svc, log)
 
-	router := server.NewRouter(productHandler)
+	router := server.NewRouter(productHandler, log)
 
 	srv := &http.Server{
 		Addr:         cfg.HTTPServer.Address,

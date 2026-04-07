@@ -1,19 +1,22 @@
 package server
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
 	"github.com/kelar1s/go-freight/internal/products/handler"
+	mwLogger "github.com/kelar1s/go-freight/internal/server/middleware/logger"
 )
 
-func NewRouter(h *handler.ProductHandler) http.Handler {
+func NewRouter(h *handler.ProductHandler, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	r.Use(mwLogger.New(log))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
 

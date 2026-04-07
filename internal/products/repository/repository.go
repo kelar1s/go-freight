@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/kelar1s/go-freight/internal/products/model"
 	"github.com/kelar1s/go-freight/internal/products/repository/pg"
@@ -21,9 +22,11 @@ func NewProductRepository(db *pg.Queries) *ProductRepository {
 }
 
 func (pr *ProductRepository) CreateWarehouse(ctx context.Context, name string, location string) (model.Warehouse, error) {
+	const op = "repository.postgres.CreateWarehouse"
+
 	pgWarehouse, err := pr.db.CreateWarehouse(ctx, pg.CreateWarehouseParams{Name: name, Location: location})
 	if err != nil {
-		return model.Warehouse{}, err
+		return model.Warehouse{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return model.Warehouse{
 		ID:        pgWarehouse.ID,
@@ -34,17 +37,24 @@ func (pr *ProductRepository) CreateWarehouse(ctx context.Context, name string, l
 }
 
 func (pr *ProductRepository) DeleteWarehouse(ctx context.Context, id int32) error {
-	return pr.db.DeleteWarehouse(ctx, id)
+	const op = "repository.postgres.DeleteWarehouse"
+
+	if err := pr.db.DeleteWarehouse(ctx, id); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
 }
 
 func (pr *ProductRepository) GetWarehouse(ctx context.Context, id int32) (model.Warehouse, error) {
+	const op = "repository.postgres.GetWarehouse"
+
 	pgWarehouse, err := pr.db.GetWarehouse(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return model.Warehouse{}, model.ErrWarehouseNotFound
+			return model.Warehouse{}, fmt.Errorf("%s: %w", op, model.ErrWarehouseNotFound)
 		default:
-			return model.Warehouse{}, err
+			return model.Warehouse{}, fmt.Errorf("%s: %w", op, err)
 		}
 	}
 	return model.Warehouse{
@@ -56,9 +66,11 @@ func (pr *ProductRepository) GetWarehouse(ctx context.Context, id int32) (model.
 }
 
 func (pr *ProductRepository) ListWarehouses(ctx context.Context) ([]model.Warehouse, error) {
+	const op = "repository.postgres.ListWarehouses"
+
 	pgListWarehouses, err := pr.db.ListWarehouses(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	listWarehouses := make([]model.Warehouse, len(pgListWarehouses))
 	for id, val := range pgListWarehouses {
@@ -73,21 +85,28 @@ func (pr *ProductRepository) ListWarehouses(ctx context.Context) ([]model.Wareho
 }
 
 func (pr *ProductRepository) UpdateWarehouse(ctx context.Context, id int32, name string, location string) error {
-	return pr.db.UpdateWarehouse(ctx, pg.UpdateWarehouseParams{
+	const op = "repository.postgres.UpdateWarehouse"
+
+	if err := pr.db.UpdateWarehouse(ctx, pg.UpdateWarehouseParams{
 		ID:       id,
 		Name:     name,
 		Location: location,
-	})
+	}); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
 }
 
 func (pr *ProductRepository) CreateProduct(ctx context.Context, warehouseID int32, name string, quantity int32) (model.Product, error) {
+	const op = "repository.postgres.CreateProduct"
+
 	pgProduct, err := pr.db.CreateProduct(ctx, pg.CreateProductParams{
 		WarehouseID: warehouseID,
 		Name:        name,
 		Quantity:    quantity,
 	})
 	if err != nil {
-		return model.Product{}, err
+		return model.Product{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return model.Product{
 		ID:          pgProduct.ID,
@@ -99,17 +118,24 @@ func (pr *ProductRepository) CreateProduct(ctx context.Context, warehouseID int3
 }
 
 func (pr *ProductRepository) DeleteProduct(ctx context.Context, id int32) error {
-	return pr.db.DeleteProduct(ctx, id)
+	const op = "repository.postgres.DeleteProduct"
+
+	if err := pr.db.DeleteProduct(ctx, id); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
 }
 
 func (pr *ProductRepository) GetProduct(ctx context.Context, id int32) (model.Product, error) {
+	const op = "repository.postgres.GetProduct"
+
 	pgProduct, err := pr.db.GetProduct(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return model.Product{}, model.ErrProductNotFound
+			return model.Product{}, fmt.Errorf("%s: %w", op, model.ErrProductNotFound)
 		default:
-			return model.Product{}, err
+			return model.Product{}, fmt.Errorf("%s: %w", op, err)
 		}
 	}
 	return model.Product{
@@ -122,9 +148,11 @@ func (pr *ProductRepository) GetProduct(ctx context.Context, id int32) (model.Pr
 }
 
 func (pr *ProductRepository) ListProductsByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error) {
+	const op = "repository.postgres.ListProductsByWarehouse"
+
 	pgListProducts, err := pr.db.ListProductsByWarehouse(ctx, warehouseID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	listProducts := make([]model.Product, len(pgListProducts))
 	for ind, val := range pgListProducts {
@@ -140,14 +168,20 @@ func (pr *ProductRepository) ListProductsByWarehouse(ctx context.Context, wareho
 }
 
 func (pr *ProductRepository) SetProductQuantity(ctx context.Context, id int32, quantity int32) error {
-	return pr.db.SetProductQuantity(ctx, pg.SetProductQuantityParams{
+	const op = "repository.postgres.SetProductQuantity"
+
+	if err := pr.db.SetProductQuantity(ctx, pg.SetProductQuantityParams{
 		ID:       id,
 		Quantity: quantity,
-	})
-
+	}); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
 }
 
 func (pr *ProductRepository) AddProductQuantity(ctx context.Context, id int32, quantity int32) error {
+	const op = "repository.postgres.AddProductQuantity"
+
 	err := pr.db.AddProductQuantity(ctx, pg.AddProductQuantityParams{
 		ID:       id,
 		Quantity: quantity,
@@ -156,10 +190,10 @@ func (pr *ProductRepository) AddProductQuantity(ctx context.Context, id int32, q
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code == "23514" {
-				return model.ErrNotEnoughQuantity
+				return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
 			}
 		}
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
