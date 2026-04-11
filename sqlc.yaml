@@ -1,11 +1,11 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    schema: "db/migrations/products"
-    queries: "db/queries/products"
+    schema: "db/migrations/inventory"
+    queries: "db/queries/inventory"
     gen:
       go:
         package: "pg"
-        out: "internal/products/repository/pg"
+        out: "internal/inventory/repository/pg"
         emit_interface: false
         emit_json_tags: false

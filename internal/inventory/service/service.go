@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kelar1s/go-freight/internal/products/model"
+	"github.com/kelar1s/go-freight/internal/inventory/model"
 )
 
 type Repository interface {

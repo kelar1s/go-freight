@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/kelar1s/go-freight/internal/config"
-	"github.com/kelar1s/go-freight/internal/products/handler"
-	"github.com/kelar1s/go-freight/internal/products/repository"
-	"github.com/kelar1s/go-freight/internal/products/repository/pg"
-	"github.com/kelar1s/go-freight/internal/products/service"
+	"github.com/kelar1s/go-freight/internal/inventory/handler"
+	"github.com/kelar1s/go-freight/internal/inventory/repository"
+	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
+	"github.com/kelar1s/go-freight/internal/inventory/service"
 	"github.com/kelar1s/go-freight/internal/server"
 	_ "github.com/lib/pq"
 )

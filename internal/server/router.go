@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/kelar1s/go-freight/internal/products/handler"
+	"github.com/kelar1s/go-freight/internal/inventory/handler"
 	mwLogger "github.com/kelar1s/go-freight/internal/server/middleware/logger"
 )
 

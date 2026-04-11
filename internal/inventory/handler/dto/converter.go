@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/kelar1s/go-freight/internal/products/model"
+import "github.com/kelar1s/go-freight/internal/inventory/model"
 
 func ToWarehouseResponse(warehouse model.Warehouse) WarehouseResponse {
 	return WarehouseResponse{

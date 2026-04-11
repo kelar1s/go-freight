@@ -1,0 +1,50 @@
+version: '3'
+
+vars:
+  CONFIG_PATH: './config/local.yaml'
+  APP_ENTRY: 'cmd/gofreight/main.go'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  up:
+    desc: "Поднять всю инфраструктуру (БД и т.д.) в Docker"
+    cmds:
+      - docker compose up -d
+
+  down:
+    desc: "Остановить и удалить контейнеры Docker"
+    cmds:
+      - docker compose down
+
+  run:
+    desc: "Запустить сервер локально"
+    cmds:
+      - CONFIG_PATH={{.CONFIG_PATH}} go run {{.APP_ENTRY}}
+
+  test:
+    desc: "Запустить все юнит и интеграционные тесты"
+    cmds:
+      - go test -v ./...
+
+  cover:
+    desc: "Запустить тесты и открыть HTML-отчет о покрытии кода"
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out
+      - rm coverage.out
+
+  gen:
+    desc: "Сгенерировать код (mockery для интерфейсов и sqlc для БД)"
+    cmds:
+      - go generate ./...
+      - sqlc generate
+    silent: false
+
+  lint:
+    desc: "Запустить линтер (проверка качества кода)"
+    cmds:
+      - golangci-lint run

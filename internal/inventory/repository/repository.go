@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kelar1s/go-freight/internal/products/model"
-	"github.com/kelar1s/go-freight/internal/products/repository/pg"
+	"github.com/kelar1s/go-freight/internal/inventory/model"
+	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
 	"github.com/lib/pq"
 )
 
