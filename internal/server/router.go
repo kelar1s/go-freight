@@ -39,8 +39,13 @@ func NewRouter(h *handler.ProductHandler, log *slog.Logger) http.Handler {
 			r.Route("/{id}", func(r chi.Router) {
 				r.Get("/", h.GetProduct)
 				r.Delete("/", h.DeleteProduct)
+
 				r.Patch("/add", h.AddProductQuantity)
 				r.Patch("/set", h.SetProductQuantity)
+
+				r.Patch("/reserve", h.ReserveProduct)
+				r.Patch("/release", h.ReleaseProduct)
+				r.Patch("/cancel-reservation", h.CancelReservation)
 			})
 		})
 	})

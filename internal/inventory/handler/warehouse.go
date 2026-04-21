@@ -67,6 +67,9 @@ func (h *ProductHandler) DeleteWarehouse(w http.ResponseWriter, r *http.Request)
 		case errors.Is(err, model.ErrInvalidWarehouseID):
 			log.Warn("invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrWarehouseNotFound):
+			log.Warn("warehouse not found")
+			WriteError(w, http.StatusNotFound, err.Error())
 		default:
 			log.Error("failed to delete warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
@@ -161,6 +164,9 @@ func (h *ProductHandler) UpdateWarehouse(w http.ResponseWriter, r *http.Request)
 		case errors.Is(err, model.ErrEmptyWarehouseLocation):
 			log.Warn("invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrWarehouseNotFound):
+			log.Warn("warehouse not found")
+			WriteError(w, http.StatusNotFound, err.Error())
 		default:
 			log.Error("failed to update warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")

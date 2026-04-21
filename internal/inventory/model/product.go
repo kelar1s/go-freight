@@ -7,5 +7,6 @@ type Product struct {
 	WarehouseID int32
 	Name        string
 	Quantity    int32
+	Reserved    int32
 	CreatedAt   time.Time
 }

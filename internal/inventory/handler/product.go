@@ -70,6 +70,9 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, model.ErrInvalidProductID):
 			log.Warn("invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrProductNotFound):
+			log.Warn("product not found")
+			WriteError(w, http.StatusNotFound, err.Error())
 		default:
 			log.Error("failed to delete product", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
@@ -177,6 +180,12 @@ func (h *ProductHandler) SetProductQuantity(w http.ResponseWriter, r *http.Reque
 		case errors.Is(err, model.ErrInvalidProductID):
 			log.Warn("invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrProductNotFound):
+			log.Warn("product not found")
+			WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, model.ErrInvalidQuantity):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
 		default:
 			log.Error("failed to set product quantity", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
@@ -209,6 +218,9 @@ func (h *ProductHandler) AddProductQuantity(w http.ResponseWriter, r *http.Reque
 	err = h.service.AddProductQuantity(r.Context(), int32(productID), req.Quantity)
 	if err != nil {
 		switch {
+		case errors.Is(err, model.ErrProductNotFound):
+			log.Warn("product not found")
+			WriteError(w, http.StatusNotFound, err.Error())
 		case errors.Is(err, model.ErrInvalidProductID):
 			log.Warn("invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
@@ -217,6 +229,138 @@ func (h *ProductHandler) AddProductQuantity(w http.ResponseWriter, r *http.Reque
 			WriteError(w, http.StatusConflict, err.Error())
 		default:
 			log.Error("failed to add product quantity", slog.String("error", err.Error()))
+			WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ProductHandler) ReserveProduct(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.ReserveProduct"
+
+	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
+
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	if err != nil {
+		log.Warn("failed to parse product id", slog.String("error", err.Error()))
+		WriteError(w, http.StatusBadRequest, "invalid product ID format")
+		return
+	}
+
+	log = log.With(slog.Int("product_id", int(productID)))
+
+	var req dto.ReserveProductRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Warn("failed to decode request body", slog.String("error", err.Error()))
+		WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	err = h.service.ReserveProduct(r.Context(), int32(productID), req.Quantity)
+	if err != nil {
+		switch {
+		case errors.Is(err, model.ErrProductNotFound):
+			log.Warn("product not found")
+			WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, model.ErrInvalidProductID):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrNotEnoughQuantity):
+			log.Warn("not enough quantity", slog.String("error", err.Error()))
+			WriteError(w, http.StatusConflict, err.Error())
+		case errors.Is(err, model.ErrInvalidQuantity):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
+		default:
+			log.Error("failed to reserve product", slog.String("error", err.Error()))
+			WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ProductHandler) ReleaseProduct(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.ReleaseProduct"
+
+	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
+
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	if err != nil {
+		log.Warn("failed to parse product id", slog.String("error", err.Error()))
+		WriteError(w, http.StatusBadRequest, "invalid product ID format")
+		return
+	}
+
+	log = log.With(slog.Int("product_id", int(productID)))
+
+	var req dto.ReleaseProductRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Warn("failed to decode request body", slog.String("error", err.Error()))
+		WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	err = h.service.ReleaseProduct(r.Context(), int32(productID), req.Quantity)
+	if err != nil {
+		switch {
+		case errors.Is(err, model.ErrProductNotFound):
+			log.Warn("product not found")
+			WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, model.ErrInvalidProductID):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrNotEnoughQuantity):
+			log.Warn("not enough quantity", slog.String("error", err.Error()))
+			WriteError(w, http.StatusConflict, err.Error())
+		case errors.Is(err, model.ErrInvalidQuantity):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
+		default:
+			log.Error("failed to release product", slog.String("error", err.Error()))
+			WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ProductHandler) CancelReservation(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.CancelReservation"
+
+	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
+
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	if err != nil {
+		log.Warn("failed to parse product id", slog.String("error", err.Error()))
+		WriteError(w, http.StatusBadRequest, "invalid product ID format")
+		return
+	}
+
+	log = log.With(slog.Int("product_id", int(productID)))
+
+	var req dto.CancelReservationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Warn("failed to decode request body", slog.String("error", err.Error()))
+		WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	err = h.service.CancelReservation(r.Context(), int32(productID), req.Quantity)
+	if err != nil {
+		switch {
+		case errors.Is(err, model.ErrProductNotFound):
+			log.Warn("product not found")
+			WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, model.ErrInvalidProductID):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, model.ErrNotEnoughQuantity):
+			log.Warn("not enough quantity", slog.String("error", err.Error()))
+			WriteError(w, http.StatusConflict, err.Error())
+		case errors.Is(err, model.ErrInvalidQuantity):
+			log.Warn("invalid input", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
+		default:
+			log.Error("failed to cancel reservation", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return

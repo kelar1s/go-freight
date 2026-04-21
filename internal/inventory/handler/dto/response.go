@@ -14,6 +14,7 @@ type ProductResponse struct {
 	WarehouseID int32     `json:"warehouse_id"`
 	Name        string    `json:"name"`
 	Quantity    int32     `json:"quantity"`
+	Reserved    int32     `json:"reserved"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 

@@ -17,6 +17,7 @@ func ToProductResponse(product model.Product) ProductResponse {
 		WarehouseID: product.WarehouseID,
 		Name:        product.Name,
 		Quantity:    product.Quantity,
+		Reserved:    product.Reserved,
 		CreatedAt:   product.CreatedAt,
 	}
 }

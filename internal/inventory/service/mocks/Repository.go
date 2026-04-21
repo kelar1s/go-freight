@@ -70,6 +70,54 @@ func (_c *Repository_AddProductQuantity_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
+// CancelReservation provides a mock function with given fields: ctx, id, quantity
+func (_m *Repository) CancelReservation(ctx context.Context, id int32, quantity int32) error {
+	ret := _m.Called(ctx, id, quantity)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CancelReservation")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+		r0 = rf(ctx, id, quantity)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Repository_CancelReservation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CancelReservation'
+type Repository_CancelReservation_Call struct {
+	*mock.Call
+}
+
+// CancelReservation is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int32
+//   - quantity int32
+func (_e *Repository_Expecter) CancelReservation(ctx interface{}, id interface{}, quantity interface{}) *Repository_CancelReservation_Call {
+	return &Repository_CancelReservation_Call{Call: _e.mock.On("CancelReservation", ctx, id, quantity)}
+}
+
+func (_c *Repository_CancelReservation_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *Repository_CancelReservation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+	})
+	return _c
+}
+
+func (_c *Repository_CancelReservation_Call) Return(_a0 error) *Repository_CancelReservation_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Repository_CancelReservation_Call) RunAndReturn(run func(context.Context, int32, int32) error) *Repository_CancelReservation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateProduct provides a mock function with given fields: ctx, warehouseID, name, quantity
 func (_m *Repository) CreateProduct(ctx context.Context, warehouseID int32, name string, quantity int32) (model.Product, error) {
 	ret := _m.Called(ctx, warehouseID, name, quantity)
@@ -508,6 +556,102 @@ func (_c *Repository_ListWarehouses_Call) Return(_a0 []model.Warehouse, _a1 erro
 }
 
 func (_c *Repository_ListWarehouses_Call) RunAndReturn(run func(context.Context) ([]model.Warehouse, error)) *Repository_ListWarehouses_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ReleaseProduct provides a mock function with given fields: ctx, id, quantity
+func (_m *Repository) ReleaseProduct(ctx context.Context, id int32, quantity int32) error {
+	ret := _m.Called(ctx, id, quantity)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReleaseProduct")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+		r0 = rf(ctx, id, quantity)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Repository_ReleaseProduct_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReleaseProduct'
+type Repository_ReleaseProduct_Call struct {
+	*mock.Call
+}
+
+// ReleaseProduct is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int32
+//   - quantity int32
+func (_e *Repository_Expecter) ReleaseProduct(ctx interface{}, id interface{}, quantity interface{}) *Repository_ReleaseProduct_Call {
+	return &Repository_ReleaseProduct_Call{Call: _e.mock.On("ReleaseProduct", ctx, id, quantity)}
+}
+
+func (_c *Repository_ReleaseProduct_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *Repository_ReleaseProduct_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+	})
+	return _c
+}
+
+func (_c *Repository_ReleaseProduct_Call) Return(_a0 error) *Repository_ReleaseProduct_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Repository_ReleaseProduct_Call) RunAndReturn(run func(context.Context, int32, int32) error) *Repository_ReleaseProduct_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ReserveProduct provides a mock function with given fields: ctx, id, quantity
+func (_m *Repository) ReserveProduct(ctx context.Context, id int32, quantity int32) error {
+	ret := _m.Called(ctx, id, quantity)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReserveProduct")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+		r0 = rf(ctx, id, quantity)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Repository_ReserveProduct_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReserveProduct'
+type Repository_ReserveProduct_Call struct {
+	*mock.Call
+}
+
+// ReserveProduct is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int32
+//   - quantity int32
+func (_e *Repository_Expecter) ReserveProduct(ctx interface{}, id interface{}, quantity interface{}) *Repository_ReserveProduct_Call {
+	return &Repository_ReserveProduct_Call{Call: _e.mock.On("ReserveProduct", ctx, id, quantity)}
+}
+
+func (_c *Repository_ReserveProduct_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *Repository_ReserveProduct_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+	})
+	return _c
+}
+
+func (_c *Repository_ReserveProduct_Call) Return(_a0 error) *Repository_ReserveProduct_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Repository_ReserveProduct_Call) RunAndReturn(run func(context.Context, int32, int32) error) *Repository_ReserveProduct_Call {
 	_c.Call.Return(run)
 	return _c
 }

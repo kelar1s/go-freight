@@ -7,8 +7,8 @@ SELECT * FROM warehouses WHERE id = $1 LIMIT 1;
 -- name: ListWarehouses :many
 SELECT * FROM warehouses;
 
--- name: UpdateWarehouse :exec
-UPDATE warehouses SET name = $2, location = $3 WHERE id = $1;
+-- name: UpdateWarehouse :one
+UPDATE warehouses SET name = $2, location = $3 WHERE id = $1 RETURNING id;
 
--- name: DeleteWarehouse :exec
-DELETE FROM warehouses WHERE id = $1;
+-- name: DeleteWarehouse :one
+DELETE FROM warehouses WHERE id = $1 RETURNING id;

@@ -1,9 +1,13 @@
 version: '3'
 
+dotenv: ['.env']
+
 vars:
   CONFIG_PATH: './config/local.yaml'
   APP_ENTRY: 'cmd/gofreight/main.go'
   DOCKER_CONFIG: 'docker-compose.yml'
+  DB_DSN: "user=postgres password={{.DB_PASSWORD}} dbname=gofreight host=localhost port=5433 sslmode=disable"
+  MIGRATIONS_DIR: "db/migrations/inventory"
 
 tasks:
   default:
@@ -20,6 +24,16 @@ tasks:
     desc: "Поднять только базу данных"
     cmds:
       - docker compose up -d db
+      
+  migrate-up:
+    desc: "Накатить миграции склада"
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} postgres "{{.DB_DSN}}" up
+
+  migrate-status:
+    desc: "Проверить статус миграций"
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} postgres "{{.DB_DSN}}" status
 
   down:
     desc: "Остановить и удалить контейнеры и сети"

@@ -56,7 +56,7 @@ func main() {
 
 	queries := pg.New(db)
 	repo := repository.NewProductRepository(queries)
-	svc := service.NewProductService(repo)
+	svc := service.NewInventoryService(repo)
 	productHandler := handler.NewProductHandler(svc, log)
 
 	router := server.NewRouter(productHandler, log)

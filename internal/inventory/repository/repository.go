@@ -39,7 +39,11 @@ func (pr *ProductRepository) CreateWarehouse(ctx context.Context, name string, l
 func (pr *ProductRepository) DeleteWarehouse(ctx context.Context, id int32) error {
 	const op = "repository.postgres.DeleteWarehouse"
 
-	if err := pr.db.DeleteWarehouse(ctx, id); err != nil {
+	_, err := pr.db.DeleteWarehouse(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrWarehouseNotFound)
+		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
@@ -50,12 +54,10 @@ func (pr *ProductRepository) GetWarehouse(ctx context.Context, id int32) (model.
 
 	pgWarehouse, err := pr.db.GetWarehouse(ctx, id)
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		if errors.Is(err, sql.ErrNoRows) {
 			return model.Warehouse{}, fmt.Errorf("%s: %w", op, model.ErrWarehouseNotFound)
-		default:
-			return model.Warehouse{}, fmt.Errorf("%s: %w", op, err)
 		}
+		return model.Warehouse{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return model.Warehouse{
 		ID:        pgWarehouse.ID,
@@ -87,11 +89,15 @@ func (pr *ProductRepository) ListWarehouses(ctx context.Context) ([]model.Wareho
 func (pr *ProductRepository) UpdateWarehouse(ctx context.Context, id int32, name string, location string) error {
 	const op = "repository.postgres.UpdateWarehouse"
 
-	if err := pr.db.UpdateWarehouse(ctx, pg.UpdateWarehouseParams{
+	_, err := pr.db.UpdateWarehouse(ctx, pg.UpdateWarehouseParams{
 		ID:       id,
 		Name:     name,
 		Location: location,
-	}); err != nil {
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrWarehouseNotFound)
+		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
@@ -113,6 +119,7 @@ func (pr *ProductRepository) CreateProduct(ctx context.Context, warehouseID int3
 		WarehouseID: pgProduct.WarehouseID,
 		Name:        pgProduct.Name,
 		Quantity:    pgProduct.Quantity,
+		Reserved:    pgProduct.Reserved,
 		CreatedAt:   pgProduct.CreatedAt,
 	}, nil
 }
@@ -120,7 +127,11 @@ func (pr *ProductRepository) CreateProduct(ctx context.Context, warehouseID int3
 func (pr *ProductRepository) DeleteProduct(ctx context.Context, id int32) error {
 	const op = "repository.postgres.DeleteProduct"
 
-	if err := pr.db.DeleteProduct(ctx, id); err != nil {
+	_, err := pr.db.DeleteProduct(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrProductNotFound)
+		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
@@ -143,6 +154,7 @@ func (pr *ProductRepository) GetProduct(ctx context.Context, id int32) (model.Pr
 		WarehouseID: pgProduct.WarehouseID,
 		Name:        pgProduct.Name,
 		Quantity:    pgProduct.Quantity,
+		Reserved:    pgProduct.Reserved,
 		CreatedAt:   pgProduct.CreatedAt,
 	}, nil
 }
@@ -161,6 +173,7 @@ func (pr *ProductRepository) ListProductsByWarehouse(ctx context.Context, wareho
 			WarehouseID: val.WarehouseID,
 			Name:        val.Name,
 			Quantity:    val.Quantity,
+			Reserved:    val.Reserved,
 			CreatedAt:   val.CreatedAt,
 		}
 	}
@@ -170,10 +183,14 @@ func (pr *ProductRepository) ListProductsByWarehouse(ctx context.Context, wareho
 func (pr *ProductRepository) SetProductQuantity(ctx context.Context, id int32, quantity int32) error {
 	const op = "repository.postgres.SetProductQuantity"
 
-	if err := pr.db.SetProductQuantity(ctx, pg.SetProductQuantityParams{
+	_, err := pr.db.SetProductQuantity(ctx, pg.SetProductQuantityParams{
 		ID:       id,
 		Quantity: quantity,
-	}); err != nil {
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrProductNotFound)
+		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
@@ -182,11 +199,80 @@ func (pr *ProductRepository) SetProductQuantity(ctx context.Context, id int32, q
 func (pr *ProductRepository) AddProductQuantity(ctx context.Context, id int32, quantity int32) error {
 	const op = "repository.postgres.AddProductQuantity"
 
-	err := pr.db.AddProductQuantity(ctx, pg.AddProductQuantityParams{
+	_, err := pr.db.AddProductQuantity(ctx, pg.AddProductQuantityParams{
 		ID:       id,
 		Quantity: quantity,
 	})
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrProductNotFound)
+		}
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23514" {
+				return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
+			}
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (pr *ProductRepository) ReserveProduct(ctx context.Context, id int32, quantity int32) error {
+	const op = "repository.postgres.ReserveProduct"
+
+	_, err := pr.db.ReserveProduct(ctx, pg.ReserveProductParams{
+		ID:       id,
+		Reserved: quantity,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
+		}
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23514" {
+				return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
+			}
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (pr *ProductRepository) ReleaseProduct(ctx context.Context, id int32, quantity int32) error {
+	const op = "repository.postgres.ReleaseProduct"
+
+	_, err := pr.db.ReleaseProduct(ctx, pg.ReleaseProductParams{
+		ID:       id,
+		Quantity: quantity,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
+		}
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23514" {
+				return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
+			}
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (pr *ProductRepository) CancelReservation(ctx context.Context, id int32, quantity int32) error {
+	const op = "repository.postgres.CancelReservation"
+
+	_, err := pr.db.CancelReservation(ctx, pg.CancelReservationParams{
+		ID:       id,
+		Reserved: quantity,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
+		}
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code == "23514" {

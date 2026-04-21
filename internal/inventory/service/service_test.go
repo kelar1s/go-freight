@@ -70,7 +70,7 @@ func TestService_CreateWarehouse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			res, err := svc.CreateWarehouse(context.Background(), tc.inputName, tc.inputLocation)
 
@@ -120,7 +120,7 @@ func TestService_DeleteWarehouse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			err := svc.DeleteWarehouse(context.Background(), tc.inputID)
 
@@ -174,7 +174,7 @@ func TestService_GetWarehouse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			res, err := svc.GetWarehouse(context.Background(), tc.inputID)
 
@@ -220,7 +220,7 @@ func TestService_ListWarehouses(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			res, err := svc.ListWarehouses(context.Background())
 
@@ -296,7 +296,7 @@ func TestService_UpdateWarehouse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			err := svc.UpdateWarehouse(context.Background(), tc.inputID, tc.inputName, tc.inputLocation)
 
@@ -328,9 +328,9 @@ func TestService_CreateProduct(t *testing.T) {
 			quantity:    10,
 			mockSetup: func(r *mocks.Repository) {
 				r.EXPECT().CreateProduct(mock.Anything, int32(1), "Box", int32(10)).
-					Return(model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10}, nil).Once()
+					Return(model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10, Reserved: 0}, nil).Once()
 			},
-			expectedResult: model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10},
+			expectedResult: model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10, Reserved: 0},
 			expectedError:  nil,
 		},
 		{
@@ -377,7 +377,7 @@ func TestService_CreateProduct(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			res, err := svc.CreateProduct(context.Background(), tc.warehouseID, tc.inputName, tc.quantity)
 
@@ -427,7 +427,7 @@ func TestService_DeleteProduct(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			err := svc.DeleteProduct(context.Background(), tc.inputID)
 
@@ -454,9 +454,9 @@ func TestService_GetProduct(t *testing.T) {
 			name:    "Success",
 			inputID: 1,
 			mockSetup: func(r *mocks.Repository) {
-				r.EXPECT().GetProduct(mock.Anything, int32(1)).Return(model.Product{ID: 1, Name: "Box"}, nil).Once()
+				r.EXPECT().GetProduct(mock.Anything, int32(1)).Return(model.Product{ID: 1, Name: "Box", Reserved: 0}, nil).Once()
 			},
-			expectedResult: model.Product{ID: 1, Name: "Box"},
+			expectedResult: model.Product{ID: 1, Name: "Box", Reserved: 0},
 			expectedError:  nil,
 		},
 		{
@@ -481,7 +481,7 @@ func TestService_GetProduct(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			res, err := svc.GetProduct(context.Background(), tc.inputID)
 
@@ -510,9 +510,9 @@ func TestService_ListProductsByWarehouse(t *testing.T) {
 			name:        "Success",
 			warehouseID: 1,
 			mockSetup: func(r *mocks.Repository) {
-				r.EXPECT().ListProductsByWarehouse(mock.Anything, int32(1)).Return([]model.Product{{ID: 1, Name: "Box"}}, nil).Once()
+				r.EXPECT().ListProductsByWarehouse(mock.Anything, int32(1)).Return([]model.Product{{ID: 1, Name: "Box", Reserved: 0}}, nil).Once()
 			},
-			expectedResult: []model.Product{{ID: 1, Name: "Box"}},
+			expectedResult: []model.Product{{ID: 1, Name: "Box", Reserved: 0}},
 			expectedError:  nil,
 		},
 		{
@@ -537,7 +537,7 @@ func TestService_ListProductsByWarehouse(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			res, err := svc.ListProductsByWarehouse(context.Background(), tc.warehouseID)
 
@@ -600,7 +600,7 @@ func TestService_SetProductQuantity(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			err := svc.SetProductQuantity(context.Background(), tc.inputID, tc.quantity)
 
@@ -663,9 +663,240 @@ func TestService_AddProductQuantity(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepository(t)
 			tc.mockSetup(mockRepo)
-			svc := service.NewProductService(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
 
 			err := svc.AddProductQuantity(context.Background(), tc.inputID, tc.quantity)
+
+			if tc.expectedError != nil {
+				assert.ErrorIs(t, err, tc.expectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestService_ReserveProduct(t *testing.T) {
+	type TestCase struct {
+		name          string
+		inputID       int32
+		quantity      int32
+		mockSetup     func(r *mocks.Repository)
+		expectedError error
+	}
+
+	tests := []TestCase{
+		{
+			name:     "Success",
+			inputID:  1,
+			quantity: 5,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().ReserveProduct(mock.Anything, int32(1), int32(5)).Return(nil).Once()
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "Error - Invalid ID",
+			inputID:       0,
+			quantity:      5,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidProductID,
+		},
+		{
+			name:          "Error - Invalid Quantity (Zero)",
+			inputID:       1,
+			quantity:      0,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidQuantity,
+		},
+		{
+			name:          "Error - Invalid Quantity (Negative)",
+			inputID:       1,
+			quantity:      -5,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidQuantity,
+		},
+		{
+			name:     "Error - Repo Failure (Not Enough Quantity)",
+			inputID:  1,
+			quantity: 100,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().ReserveProduct(mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+			},
+			expectedError: model.ErrNotEnoughQuantity,
+		},
+		{
+			name:     "Error - Repo Failure",
+			inputID:  1,
+			quantity: 5,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().ReserveProduct(mock.Anything, int32(1), int32(5)).Return(errRepoExplosion).Once()
+			},
+			expectedError: errRepoExplosion,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockRepo := mocks.NewRepository(t)
+			tc.mockSetup(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
+
+			err := svc.ReserveProduct(context.Background(), tc.inputID, tc.quantity)
+
+			if tc.expectedError != nil {
+				assert.ErrorIs(t, err, tc.expectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestService_ReleaseProduct(t *testing.T) {
+	type TestCase struct {
+		name          string
+		inputID       int32
+		quantity      int32
+		mockSetup     func(r *mocks.Repository)
+		expectedError error
+	}
+
+	tests := []TestCase{
+		{
+			name:     "Success",
+			inputID:  1,
+			quantity: 3,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().ReleaseProduct(mock.Anything, int32(1), int32(3)).Return(nil).Once()
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "Error - Invalid ID",
+			inputID:       0,
+			quantity:      3,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidProductID,
+		},
+		{
+			name:          "Error - Invalid Quantity (Zero)",
+			inputID:       1,
+			quantity:      0,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidQuantity,
+		},
+		{
+			name:          "Error - Invalid Quantity (Negative)",
+			inputID:       1,
+			quantity:      -3,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidQuantity,
+		},
+		{
+			name:     "Error - Repo Failure (Not Enough Reserved)",
+			inputID:  1,
+			quantity: 100,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().ReleaseProduct(mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+			},
+			expectedError: model.ErrNotEnoughQuantity,
+		},
+		{
+			name:     "Error - Repo Failure",
+			inputID:  1,
+			quantity: 3,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().ReleaseProduct(mock.Anything, int32(1), int32(3)).Return(errRepoExplosion).Once()
+			},
+			expectedError: errRepoExplosion,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockRepo := mocks.NewRepository(t)
+			tc.mockSetup(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
+
+			err := svc.ReleaseProduct(context.Background(), tc.inputID, tc.quantity)
+
+			if tc.expectedError != nil {
+				assert.ErrorIs(t, err, tc.expectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestService_CancelReservation(t *testing.T) {
+	type TestCase struct {
+		name          string
+		inputID       int32
+		quantity      int32
+		mockSetup     func(r *mocks.Repository)
+		expectedError error
+	}
+
+	tests := []TestCase{
+		{
+			name:     "Success",
+			inputID:  1,
+			quantity: 2,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().CancelReservation(mock.Anything, int32(1), int32(2)).Return(nil).Once()
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "Error - Invalid ID",
+			inputID:       0,
+			quantity:      2,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidProductID,
+		},
+		{
+			name:          "Error - Invalid Quantity (Zero)",
+			inputID:       1,
+			quantity:      0,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidQuantity,
+		},
+		{
+			name:          "Error - Invalid Quantity (Negative)",
+			inputID:       1,
+			quantity:      -2,
+			mockSetup:     func(r *mocks.Repository) {},
+			expectedError: model.ErrInvalidQuantity,
+		},
+		{
+			name:     "Error - Repo Failure (Not Enough Reserved)",
+			inputID:  1,
+			quantity: 100,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().CancelReservation(mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+			},
+			expectedError: model.ErrNotEnoughQuantity,
+		},
+		{
+			name:     "Error - Repo Failure",
+			inputID:  1,
+			quantity: 2,
+			mockSetup: func(r *mocks.Repository) {
+				r.EXPECT().CancelReservation(mock.Anything, int32(1), int32(2)).Return(errRepoExplosion).Once()
+			},
+			expectedError: errRepoExplosion,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockRepo := mocks.NewRepository(t)
+			tc.mockSetup(mockRepo)
+			svc := service.NewInventoryService(mockRepo)
+
+			err := svc.CancelReservation(context.Background(), tc.inputID, tc.quantity)
 
 			if tc.expectedError != nil {
 				assert.ErrorIs(t, err, tc.expectedError)

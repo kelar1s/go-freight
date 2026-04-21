@@ -24,6 +24,9 @@ type Service interface {
 	ListProductsByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error)
 	SetProductQuantity(ctx context.Context, id int32, quantity int32) error
 	AddProductQuantity(ctx context.Context, id int32, quantity int32) error
+	ReserveProduct(ctx context.Context, id int32, quantity int32) error
+	ReleaseProduct(ctx context.Context, id int32, quantity int32) error
+	CancelReservation(ctx context.Context, id int32, quantity int32) error
 }
 
 type ProductHandler struct {

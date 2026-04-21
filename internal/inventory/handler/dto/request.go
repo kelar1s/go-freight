@@ -23,3 +23,15 @@ type SetProductQuantityRequest struct {
 type AddProductQuantityRequest struct {
 	Quantity int32 `json:"quantity"`
 }
+
+type ReserveProductRequest struct {
+	Quantity int32 `json:"quantity"`
+}
+
+type ReleaseProductRequest struct {
+	Quantity int32 `json:"quantity"`
+}
+
+type CancelReservationRequest struct {
+	Quantity int32 `json:"quantity"`
+}

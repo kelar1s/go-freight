@@ -22,20 +22,23 @@ type Repository interface {
 	ListProductsByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error)
 	SetProductQuantity(ctx context.Context, id int32, quantity int32) error
 	AddProductQuantity(ctx context.Context, id int32, quantity int32) error
+	ReserveProduct(ctx context.Context, id int32, quantity int32) error
+	ReleaseProduct(ctx context.Context, id int32, quantity int32) error
+	CancelReservation(ctx context.Context, id int32, quantity int32) error
 }
 
-type ProductService struct {
+type InventoryService struct {
 	repo Repository
 }
 
-func NewProductService(repo Repository) *ProductService {
-	return &ProductService{
+func NewInventoryService(repo Repository) *InventoryService {
+	return &InventoryService{
 		repo: repo,
 	}
 }
 
-func (ps *ProductService) CreateWarehouse(ctx context.Context, name string, location string) (model.Warehouse, error) {
-	const op = "service.ProductService.CreateWarehouse"
+func (ps *InventoryService) CreateWarehouse(ctx context.Context, name string, location string) (model.Warehouse, error) {
+	const op = "service.InventoryService.CreateWarehouse"
 
 	name = strings.TrimSpace(name)
 	location = strings.TrimSpace(location)
@@ -52,8 +55,8 @@ func (ps *ProductService) CreateWarehouse(ctx context.Context, name string, loca
 	return warehouse, nil
 }
 
-func (ps *ProductService) DeleteWarehouse(ctx context.Context, id int32) error {
-	const op = "service.ProductService.DeleteWarehouse"
+func (ps *InventoryService) DeleteWarehouse(ctx context.Context, id int32) error {
+	const op = "service.InventoryService.DeleteWarehouse"
 
 	if id <= 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidWarehouseID)
@@ -65,8 +68,8 @@ func (ps *ProductService) DeleteWarehouse(ctx context.Context, id int32) error {
 	return nil
 }
 
-func (ps *ProductService) GetWarehouse(ctx context.Context, id int32) (model.Warehouse, error) {
-	const op = "service.ProductService.GetWarehouse"
+func (ps *InventoryService) GetWarehouse(ctx context.Context, id int32) (model.Warehouse, error) {
+	const op = "service.InventoryService.GetWarehouse"
 
 	if id <= 0 {
 		return model.Warehouse{}, fmt.Errorf("%s: %w", op, model.ErrInvalidWarehouseID)
@@ -78,8 +81,8 @@ func (ps *ProductService) GetWarehouse(ctx context.Context, id int32) (model.War
 	return warehouse, nil
 }
 
-func (ps *ProductService) ListWarehouses(ctx context.Context) ([]model.Warehouse, error) {
-	const op = "service.ProductService.ListWarehouses"
+func (ps *InventoryService) ListWarehouses(ctx context.Context) ([]model.Warehouse, error) {
+	const op = "service.InventoryService.ListWarehouses"
 
 	warehouses, err := ps.repo.ListWarehouses(ctx)
 	if err != nil {
@@ -88,8 +91,8 @@ func (ps *ProductService) ListWarehouses(ctx context.Context) ([]model.Warehouse
 	return warehouses, nil
 }
 
-func (ps *ProductService) UpdateWarehouse(ctx context.Context, id int32, name string, location string) error {
-	const op = "service.ProductService.UpdateWarehouse"
+func (ps *InventoryService) UpdateWarehouse(ctx context.Context, id int32, name string, location string) error {
+	const op = "service.InventoryService.UpdateWarehouse"
 
 	if id <= 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidWarehouseID)
@@ -109,8 +112,8 @@ func (ps *ProductService) UpdateWarehouse(ctx context.Context, id int32, name st
 	return nil
 }
 
-func (ps *ProductService) CreateProduct(ctx context.Context, warehouseID int32, name string, quantity int32) (model.Product, error) {
-	const op = "service.ProductService.CreateProduct"
+func (ps *InventoryService) CreateProduct(ctx context.Context, warehouseID int32, name string, quantity int32) (model.Product, error) {
+	const op = "service.InventoryService.CreateProduct"
 
 	if warehouseID <= 0 {
 		return model.Product{}, fmt.Errorf("%s: %w", op, model.ErrInvalidWarehouseID)
@@ -129,8 +132,8 @@ func (ps *ProductService) CreateProduct(ctx context.Context, warehouseID int32, 
 	return product, nil
 }
 
-func (ps *ProductService) DeleteProduct(ctx context.Context, id int32) error {
-	const op = "service.ProductService.DeleteProduct"
+func (ps *InventoryService) DeleteProduct(ctx context.Context, id int32) error {
+	const op = "service.InventoryService.DeleteProduct"
 
 	if id <= 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
@@ -142,8 +145,8 @@ func (ps *ProductService) DeleteProduct(ctx context.Context, id int32) error {
 	return nil
 }
 
-func (ps *ProductService) GetProduct(ctx context.Context, id int32) (model.Product, error) {
-	const op = "service.ProductService.GetProduct"
+func (ps *InventoryService) GetProduct(ctx context.Context, id int32) (model.Product, error) {
+	const op = "service.InventoryService.GetProduct"
 
 	if id <= 0 {
 		return model.Product{}, fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
@@ -155,8 +158,8 @@ func (ps *ProductService) GetProduct(ctx context.Context, id int32) (model.Produ
 	return product, nil
 }
 
-func (ps *ProductService) ListProductsByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error) {
-	const op = "service.ProductService.ListProductsByWarehouse"
+func (ps *InventoryService) ListProductsByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error) {
+	const op = "service.InventoryService.ListProductsByWarehouse"
 
 	if warehouseID <= 0 {
 		return nil, fmt.Errorf("%s: %w", op, model.ErrInvalidWarehouseID)
@@ -168,8 +171,8 @@ func (ps *ProductService) ListProductsByWarehouse(ctx context.Context, warehouse
 	return products, nil
 }
 
-func (ps *ProductService) SetProductQuantity(ctx context.Context, id int32, quantity int32) error {
-	const op = "service.ProductService.SetProductQuantity"
+func (ps *InventoryService) SetProductQuantity(ctx context.Context, id int32, quantity int32) error {
+	const op = "service.InventoryService.SetProductQuantity"
 
 	if id <= 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
@@ -184,13 +187,61 @@ func (ps *ProductService) SetProductQuantity(ctx context.Context, id int32, quan
 	return nil
 }
 
-func (ps *ProductService) AddProductQuantity(ctx context.Context, id int32, quantity int32) error {
-	const op = "service.ProductService.AddProductQuantity"
+func (ps *InventoryService) AddProductQuantity(ctx context.Context, id int32, quantity int32) error {
+	const op = "service.InventoryService.AddProductQuantity"
 
 	if id <= 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
 	}
 	err := ps.repo.AddProductQuantity(ctx, id, quantity)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (ps *InventoryService) ReserveProduct(ctx context.Context, id int32, quantity int32) error {
+	const op = "service.InventoryService.ReserveProduct"
+
+	if id <= 0 {
+		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
+	}
+	if quantity <= 0 {
+		return fmt.Errorf("%s: %w", op, model.ErrInvalidQuantity)
+	}
+	err := ps.repo.ReserveProduct(ctx, id, quantity)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (ps *InventoryService) ReleaseProduct(ctx context.Context, id int32, quantity int32) error {
+	const op = "service.InventoryService.ReleaseProduct"
+
+	if id <= 0 {
+		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
+	}
+	if quantity <= 0 {
+		return fmt.Errorf("%s: %w", op, model.ErrInvalidQuantity)
+	}
+	err := ps.repo.ReleaseProduct(ctx, id, quantity)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (ps *InventoryService) CancelReservation(ctx context.Context, id int32, quantity int32) error {
+	const op = "service.InventoryService.CancelReservation"
+
+	if id <= 0 {
+		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
+	}
+	if quantity <= 0 {
+		return fmt.Errorf("%s: %w", op, model.ErrInvalidQuantity)
+	}
+	err := ps.repo.CancelReservation(ctx, id, quantity)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

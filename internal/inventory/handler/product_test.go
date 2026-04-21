@@ -33,26 +33,24 @@ func TestHandler_CreateProduct(t *testing.T) {
 			name:        "Success",
 			requestBody: `{"warehouse_id":1,"name":"Box","quantity":10}`,
 			mockSetup: func(s *mocks.Service) {
-				p := model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10, CreatedAt: time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)}
+				p := model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10, Reserved: 0, CreatedAt: time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)}
 				s.On("CreateProduct", mock.Anything, int32(1), "Box", int32(10)).Return(p, nil).Once()
 			},
 			expectedStatus: http.StatusCreated,
-			expectedBody:   `{"id":1,"warehouse_id":1,"name":"Box","quantity":10,"created_at":"2026-04-11T12:00:00Z"}`,
+			expectedBody:   `{"id":1,"warehouse_id":1,"name":"Box","quantity":10,"reserved":0,"created_at":"2026-04-11T12:00:00Z"}`,
 		},
 		{
-			name:        "Bad Request - Invalid JSON",
-			requestBody: `{"warehouse_id":1,"name":"Box,"quantity":10}`,
-			mockSetup: func(s *mocks.Service) {
-
-			},
+			name:           "Bad Request - Invalid JSON",
+			requestBody:    `{"warehouse_id":1,"name":"Box,"quantity":10}`,
+			mockSetup:      func(s *mocks.Service) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid request body"}`,
 		},
 		{
 			name:        "Bad Request - Invalid Warehouse ID",
-			requestBody: `{"warehouse_id":1,"name":"Box","quantity":10}`,
+			requestBody: `{"warehouse_id":0,"name":"Box","quantity":10}`,
 			mockSetup: func(s *mocks.Service) {
-				s.On("CreateProduct", mock.Anything, int32(1), "Box", int32(10)).Return(model.Product{}, model.ErrInvalidWarehouseID).Once()
+				s.On("CreateProduct", mock.Anything, int32(0), "Box", int32(10)).Return(model.Product{}, model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -133,10 +131,19 @@ func TestHandler_DeleteProduct(t *testing.T) {
 			expectedBody:   `{"error":"invalid product ID format"}`,
 		},
 		{
-			name:      "Bad Request - Invalid ID",
+			name:      "Not Found",
 			productID: "99",
 			mockSetup: func(s *mocks.Service) {
-				s.On("DeleteProduct", mock.Anything, int32(99)).Return(model.ErrInvalidProductID).Once()
+				s.On("DeleteProduct", mock.Anything, int32(99)).Return(model.ErrProductNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"product not found"}`,
+		},
+		{
+			name:      "Bad Request - Invalid ID",
+			productID: "0",
+			mockSetup: func(s *mocks.Service) {
+				s.On("DeleteProduct", mock.Anything, int32(0)).Return(model.ErrInvalidProductID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid product id"}`,
@@ -187,11 +194,11 @@ func TestHandler_GetProduct(t *testing.T) {
 			name:      "Success",
 			productID: "1",
 			mockSetup: func(s *mocks.Service) {
-				p := model.Product{ID: 1, Name: "A", Quantity: 5, CreatedAt: time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)}
+				p := model.Product{ID: 1, WarehouseID: 1, Name: "A", Quantity: 5, Reserved: 2, CreatedAt: time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)}
 				s.On("GetProduct", mock.Anything, int32(1)).Return(p, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `{"id":1,"warehouse_id":0,"name":"A","quantity":5,"created_at":"2026-04-11T12:00:00Z"}`,
+			expectedBody:   `{"id":1,"warehouse_id":1,"name":"A","quantity":5,"reserved":2,"created_at":"2026-04-11T12:00:00Z"}`,
 		},
 		{
 			name:           "Bad Request - Invalid ID Format",
@@ -202,9 +209,9 @@ func TestHandler_GetProduct(t *testing.T) {
 		},
 		{
 			name:      "Bad Request - Invalid ID",
-			productID: "2",
+			productID: "0",
 			mockSetup: func(s *mocks.Service) {
-				s.On("GetProduct", mock.Anything, int32(2)).Return(model.Product{}, model.ErrInvalidProductID).Once()
+				s.On("GetProduct", mock.Anything, int32(0)).Return(model.Product{}, model.ErrInvalidProductID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid product id"}`,
@@ -259,16 +266,18 @@ func TestHandler_ListProductsByWarehouse(t *testing.T) {
 		expectedBody   string
 	}
 
+	mockTime := time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)
+
 	tests := []testCase{
 		{
 			name:        "Success",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.Service) {
-				pList := []model.Product{{ID: 1, WarehouseID: 1, Name: "P1", Quantity: 10}}
+				pList := []model.Product{{ID: 1, WarehouseID: 1, Name: "P1", Quantity: 10, Reserved: 0, CreatedAt: mockTime}}
 				s.On("ListProductsByWarehouse", mock.Anything, int32(1)).Return(pList, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `[{"id":1,"warehouse_id":1,"name":"P1","quantity":10,"created_at":"0001-01-01T00:00:00Z"}]`,
+			expectedBody:   `[{"id":1,"warehouse_id":1,"name":"P1","quantity":10,"reserved":0,"created_at":"2026-04-11T12:00:00Z"}]`,
 		},
 		{
 			name:           "Bad Request - Invalid ID Format",
@@ -279,9 +288,9 @@ func TestHandler_ListProductsByWarehouse(t *testing.T) {
 		},
 		{
 			name:        "Bad Request - Invalid Warehouse ID",
-			warehouseID: "99",
+			warehouseID: "0",
 			mockSetup: func(s *mocks.Service) {
-				s.On("ListProductsByWarehouse", mock.Anything, int32(99)).Return(nil, model.ErrInvalidWarehouseID).Once()
+				s.On("ListProductsByWarehouse", mock.Anything, int32(0)).Return(nil, model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -355,6 +364,16 @@ func TestHandler_SetProductQuantity(t *testing.T) {
 			expectedBody:   `{"error":"invalid request body"}`,
 		},
 		{
+			name:        "Not Found",
+			productID:   "1",
+			requestBody: `{"quantity":50}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("SetProductQuantity", mock.Anything, int32(1), int32(50)).Return(model.ErrProductNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"product not found"}`,
+		},
+		{
 			name:        "Bad Request - Invalid Product ID",
 			productID:   "1",
 			requestBody: `{"quantity":50}`,
@@ -363,6 +382,16 @@ func TestHandler_SetProductQuantity(t *testing.T) {
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid product id"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Quantity",
+			productID:   "1",
+			requestBody: `{"quantity":-5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("SetProductQuantity", mock.Anything, int32(1), int32(-5)).Return(model.ErrInvalidQuantity).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product quantity"}`,
 		},
 		{
 			name:        "Internal Server Error - DB",
@@ -409,7 +438,16 @@ func TestHandler_AddProductQuantity(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name:        "Success",
+			name:        "Success (Positive)",
+			productID:   "1",
+			requestBody: `{"quantity":5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("AddProductQuantity", mock.Anything, int32(1), int32(5)).Return(nil).Once()
+			},
+			expectedStatus: http.StatusNoContent,
+		},
+		{
+			name:        "Success (Negative)",
 			productID:   "1",
 			requestBody: `{"quantity":-5}`,
 			mockSetup: func(s *mocks.Service) {
@@ -432,6 +470,16 @@ func TestHandler_AddProductQuantity(t *testing.T) {
 			mockSetup:      func(s *mocks.Service) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid request body"}`,
+		},
+		{
+			name:        "Not Found",
+			productID:   "1",
+			requestBody: `{"quantity":5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("AddProductQuantity", mock.Anything, int32(1), int32(5)).Return(model.ErrProductNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"product not found"}`,
 		},
 		{
 			name:        "Bad Request - Invalid Product ID",
@@ -475,6 +523,333 @@ func TestHandler_AddProductQuantity(t *testing.T) {
 			r.Patch("/api/v1/products/{id}/add", h.AddProductQuantity)
 
 			req := httptest.NewRequest(http.MethodPatch, "/api/v1/products/"+tc.productID+"/add", bytes.NewBufferString(tc.requestBody))
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			assert.Equal(t, tc.expectedStatus, rr.Code)
+			if tc.expectedBody != "" {
+				assert.JSONEq(t, tc.expectedBody, rr.Body.String())
+			}
+		})
+	}
+}
+
+func TestHandler_ReserveProduct(t *testing.T) {
+	type testCase struct {
+		name           string
+		productID      string
+		requestBody    string
+		mockSetup      func(s *mocks.Service)
+		expectedStatus int
+		expectedBody   string
+	}
+
+	tests := []testCase{
+		{
+			name:        "Success",
+			productID:   "1",
+			requestBody: `{"quantity":5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReserveProduct", mock.Anything, int32(1), int32(5)).Return(nil).Once()
+			},
+			expectedStatus: http.StatusNoContent,
+		},
+		{
+			name:           "Bad Request - Invalid ID Format",
+			productID:      "abc",
+			requestBody:    `{"quantity":5}`,
+			mockSetup:      func(s *mocks.Service) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product ID format"}`,
+		},
+		{
+			name:           "Bad Request - Invalid JSON",
+			productID:      "1",
+			requestBody:    `{"quantity":"five"}`,
+			mockSetup:      func(s *mocks.Service) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid request body"}`,
+		},
+		{
+			name:        "Not Found",
+			productID:   "1",
+			requestBody: `{"quantity":5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReserveProduct", mock.Anything, int32(1), int32(5)).Return(model.ErrProductNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"product not found"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Product ID",
+			productID:   "1",
+			requestBody: `{"quantity":5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReserveProduct", mock.Anything, int32(1), int32(5)).Return(model.ErrInvalidProductID).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product id"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Quantity (Zero)",
+			productID:   "1",
+			requestBody: `{"quantity":0}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReserveProduct", mock.Anything, int32(1), int32(0)).Return(model.ErrInvalidQuantity).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product quantity"}`,
+		},
+		{
+			name:        "Conflict - Not Enough Quantity",
+			productID:   "1",
+			requestBody: `{"quantity":100}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReserveProduct", mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+			},
+			expectedStatus: http.StatusConflict,
+			expectedBody:   `{"error":"not enough quantity"}`,
+		},
+		{
+			name:        "Internal Server Error - DB",
+			productID:   "1",
+			requestBody: `{"quantity":5}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReserveProduct", mock.Anything, int32(1), int32(5)).Return(errors.New("db error")).Once()
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   `{"error":"internal server error"}`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockSvc := mocks.NewService(t)
+			tc.mockSetup(mockSvc)
+			h := handler.NewProductHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
+
+			r := chi.NewRouter()
+			r.Patch("/api/v1/products/{id}/reserve", h.ReserveProduct)
+
+			req := httptest.NewRequest(http.MethodPatch, "/api/v1/products/"+tc.productID+"/reserve", bytes.NewBufferString(tc.requestBody))
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			assert.Equal(t, tc.expectedStatus, rr.Code)
+			if tc.expectedBody != "" {
+				assert.JSONEq(t, tc.expectedBody, rr.Body.String())
+			}
+		})
+	}
+}
+
+func TestHandler_ReleaseProduct(t *testing.T) {
+	type testCase struct {
+		name           string
+		productID      string
+		requestBody    string
+		mockSetup      func(s *mocks.Service)
+		expectedStatus int
+		expectedBody   string
+	}
+
+	tests := []testCase{
+		{
+			name:        "Success",
+			productID:   "1",
+			requestBody: `{"quantity":3}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReleaseProduct", mock.Anything, int32(1), int32(3)).Return(nil).Once()
+			},
+			expectedStatus: http.StatusNoContent,
+		},
+		{
+			name:           "Bad Request - Invalid ID Format",
+			productID:      "abc",
+			requestBody:    `{"quantity":3}`,
+			mockSetup:      func(s *mocks.Service) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product ID format"}`,
+		},
+		{
+			name:           "Bad Request - Invalid JSON",
+			productID:      "1",
+			requestBody:    `{"quantity":"three"}`,
+			mockSetup:      func(s *mocks.Service) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid request body"}`,
+		},
+		{
+			name:        "Not Found",
+			productID:   "1",
+			requestBody: `{"quantity":3}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReleaseProduct", mock.Anything, int32(1), int32(3)).Return(model.ErrProductNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"product not found"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Product ID",
+			productID:   "1",
+			requestBody: `{"quantity":3}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReleaseProduct", mock.Anything, int32(1), int32(3)).Return(model.ErrInvalidProductID).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product id"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Quantity (Zero)",
+			productID:   "1",
+			requestBody: `{"quantity":0}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReleaseProduct", mock.Anything, int32(1), int32(0)).Return(model.ErrInvalidQuantity).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product quantity"}`,
+		},
+		{
+			name:        "Conflict - Not Enough Reserved",
+			productID:   "1",
+			requestBody: `{"quantity":100}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReleaseProduct", mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+			},
+			expectedStatus: http.StatusConflict,
+			expectedBody:   `{"error":"not enough quantity"}`,
+		},
+		{
+			name:        "Internal Server Error - DB",
+			productID:   "1",
+			requestBody: `{"quantity":3}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("ReleaseProduct", mock.Anything, int32(1), int32(3)).Return(errors.New("db error")).Once()
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   `{"error":"internal server error"}`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockSvc := mocks.NewService(t)
+			tc.mockSetup(mockSvc)
+			h := handler.NewProductHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
+
+			r := chi.NewRouter()
+			r.Patch("/api/v1/products/{id}/release", h.ReleaseProduct)
+
+			req := httptest.NewRequest(http.MethodPatch, "/api/v1/products/"+tc.productID+"/release", bytes.NewBufferString(tc.requestBody))
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			assert.Equal(t, tc.expectedStatus, rr.Code)
+			if tc.expectedBody != "" {
+				assert.JSONEq(t, tc.expectedBody, rr.Body.String())
+			}
+		})
+	}
+}
+
+func TestHandler_CancelReservation(t *testing.T) {
+	type testCase struct {
+		name           string
+		productID      string
+		requestBody    string
+		mockSetup      func(s *mocks.Service)
+		expectedStatus int
+		expectedBody   string
+	}
+
+	tests := []testCase{
+		{
+			name:        "Success",
+			productID:   "1",
+			requestBody: `{"quantity":2}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("CancelReservation", mock.Anything, int32(1), int32(2)).Return(nil).Once()
+			},
+			expectedStatus: http.StatusNoContent,
+		},
+		{
+			name:           "Bad Request - Invalid ID Format",
+			productID:      "abc",
+			requestBody:    `{"quantity":2}`,
+			mockSetup:      func(s *mocks.Service) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product ID format"}`,
+		},
+		{
+			name:           "Bad Request - Invalid JSON",
+			productID:      "1",
+			requestBody:    `{"quantity":"two"}`,
+			mockSetup:      func(s *mocks.Service) {},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid request body"}`,
+		},
+		{
+			name:        "Not Found",
+			productID:   "1",
+			requestBody: `{"quantity":2}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("CancelReservation", mock.Anything, int32(1), int32(2)).Return(model.ErrProductNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"product not found"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Product ID",
+			productID:   "1",
+			requestBody: `{"quantity":2}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("CancelReservation", mock.Anything, int32(1), int32(2)).Return(model.ErrInvalidProductID).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product id"}`,
+		},
+		{
+			name:        "Bad Request - Invalid Quantity (Zero)",
+			productID:   "1",
+			requestBody: `{"quantity":0}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("CancelReservation", mock.Anything, int32(1), int32(0)).Return(model.ErrInvalidQuantity).Once()
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"error":"invalid product quantity"}`,
+		},
+		{
+			name:        "Conflict - Not Enough Reserved",
+			productID:   "1",
+			requestBody: `{"quantity":100}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("CancelReservation", mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+			},
+			expectedStatus: http.StatusConflict,
+			expectedBody:   `{"error":"not enough quantity"}`,
+		},
+		{
+			name:        "Internal Server Error - DB",
+			productID:   "1",
+			requestBody: `{"quantity":2}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("CancelReservation", mock.Anything, int32(1), int32(2)).Return(errors.New("db error")).Once()
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   `{"error":"internal server error"}`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockSvc := mocks.NewService(t)
+			tc.mockSetup(mockSvc)
+			h := handler.NewProductHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
+
+			r := chi.NewRouter()
+			r.Patch("/api/v1/products/{id}/cancel", h.CancelReservation)
+
+			req := httptest.NewRequest(http.MethodPatch, "/api/v1/products/"+tc.productID+"/cancel", bytes.NewBufferString(tc.requestBody))
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 

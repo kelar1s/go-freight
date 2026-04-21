@@ -128,10 +128,19 @@ func TestHandler_DeleteWarehouse(t *testing.T) {
 			expectedBody:   `{"error":"invalid warehouse ID format"}`,
 		},
 		{
-			name:        "Bad Request - Invalid ID",
+			name:        "Not Found",
 			warehouseID: "999",
 			mockSetup: func(s *mocks.Service) {
-				s.On("DeleteWarehouse", mock.Anything, int32(999)).Return(model.ErrInvalidWarehouseID).Once()
+				s.On("DeleteWarehouse", mock.Anything, int32(999)).Return(model.ErrWarehouseNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"warehouse not found"}`,
+		},
+		{
+			name:        "Bad Request - Invalid ID",
+			warehouseID: "0",
+			mockSetup: func(s *mocks.Service) {
+				s.On("DeleteWarehouse", mock.Anything, int32(0)).Return(model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -209,9 +218,9 @@ func TestHandler_GetWarehouse(t *testing.T) {
 		},
 		{
 			name:        "Bad Request - Invalid ID",
-			warehouseID: "123",
+			warehouseID: "0",
 			mockSetup: func(s *mocks.Service) {
-				s.On("GetWarehouse", mock.Anything, int32(123)).Return(model.Warehouse{}, model.ErrInvalidWarehouseID).Once()
+				s.On("GetWarehouse", mock.Anything, int32(0)).Return(model.Warehouse{}, model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -257,14 +266,16 @@ func TestHandler_ListWarehouses(t *testing.T) {
 		expectedBody   string
 	}
 
+	mockTime := time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)
+
 	tests := []testCase{
 		{
 			name: "Success",
 			mockSetup: func(s *mocks.Service) {
-				s.On("ListWarehouses", mock.Anything).Return([]model.Warehouse{{ID: 1, Name: "W1", Location: "L1"}}, nil).Once()
+				s.On("ListWarehouses", mock.Anything).Return([]model.Warehouse{{ID: 1, Name: "W1", Location: "L1", CreatedAt: mockTime}}, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `[{"id":1,"name":"W1","location":"L1","created_at":"0001-01-01T00:00:00Z"}]`,
+			expectedBody:   `[{"id":1,"name":"W1","location":"L1","created_at":"2026-04-11T12:00:00Z"}]`,
 		},
 		{
 			name: "Internal Server Error - DB",
@@ -332,6 +343,16 @@ func TestHandler_UpdateWarehouse(t *testing.T) {
 			mockSetup:      func(s *mocks.Service) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error": "invalid request body"}`,
+		},
+		{
+			name:        "Not Found",
+			warehouseID: "1",
+			requestBody: `{"name":"New","location":"Loc"}`,
+			mockSetup: func(s *mocks.Service) {
+				s.On("UpdateWarehouse", mock.Anything, int32(1), "New", "Loc").Return(model.ErrWarehouseNotFound).Once()
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   `{"error":"warehouse not found"}`,
 		},
 		{
 			name:        "Bad Request - Empty Name",
