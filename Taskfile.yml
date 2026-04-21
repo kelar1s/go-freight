@@ -3,6 +3,7 @@ version: '3'
 vars:
   CONFIG_PATH: './config/local.yaml'
   APP_ENTRY: 'cmd/gofreight/main.go'
+  DOCKER_CONFIG: 'docker-compose.yml'
 
 tasks:
   default:
@@ -11,40 +12,56 @@ tasks:
     silent: true
 
   up:
-    desc: "Поднять всю инфраструктуру (БД и т.д.) в Docker"
+    desc: "Собрать и поднять всё в Docker (с пересборкой)"
     cmds:
-      - docker compose up -d
+      - docker compose up -d --build
+
+  db:
+    desc: "Поднять только базу данных"
+    cmds:
+      - docker compose up -d db
 
   down:
-    desc: "Остановить и удалить контейнеры Docker"
+    desc: "Остановить и удалить контейнеры и сети"
     cmds:
       - docker compose down
 
+  logs:
+    desc: "Смотреть логи приложения в реальном времени"
+    cmds:
+      - docker logs -f gofreight_api
+
   run:
-    desc: "Запустить сервер локально"
+    desc: "Запустить сервер локально (нужен поднятый 'task db')"
     cmds:
       - CONFIG_PATH={{.CONFIG_PATH}} go run {{.APP_ENTRY}}
 
   test:
-    desc: "Запустить все юнит и интеграционные тесты"
+    desc: "Запустить все тесты"
     cmds:
-      - go test -v ./...
+      - go test -v -race -timeout 30s ./...
 
   cover:
-    desc: "Запустить тесты и открыть HTML-отчет о покрытии кода"
+    desc: "Покрытие кода в браузере"
     cmds:
       - go test -coverprofile=coverage.out ./...
       - go tool cover -html=coverage.out
       - rm coverage.out
 
   gen:
-    desc: "Сгенерировать код (mockery для интерфейсов и sqlc для БД)"
+    desc: "Генерация моков и sqlc"
     cmds:
       - go generate ./...
       - sqlc generate
     silent: false
 
+  tidy:
+    desc: "Очистить и обновить зависимости go.mod"
+    cmds:
+      - go mod tidy
+      - go mod verify
+
   lint:
-    desc: "Запустить линтер (проверка качества кода)"
+    desc: "Запустить линтер"
     cmds:
       - golangci-lint run

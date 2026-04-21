@@ -16,17 +16,17 @@ type Config struct {
 }
 
 type HTTPServer struct {
-	Address     string        `yaml:"address" env-default:"localhost:8080"`
+	Address     string        `yaml:"address" env:"HTTP_SERVER_ADDRESS" env-default:"0.0.0.0:8080"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
 type Database struct {
-	Host     string `yaml:"host" env-required:"true"`
-	Port     int    `yaml:"port" env-required:"true"`
-	User     string `yaml:"user" env-required:"true"`
-	Password string `yaml:"password" env-required:"true" env:"DB_PASSWORD"`
-	DBName   string `yaml:"db_name" env-required:"true"`
+	Host     string `yaml:"host" env:"DB_HOST" env-required:"true"`
+	Port     int    `yaml:"port" env:"DB_PORT" env-required:"true"`
+	User     string `yaml:"user" env:"DB_USER" env-required:"true"`
+	Password string `yaml:"password" env:"DB_PASSWORD" env-required:"true"`
+	DBName   string `yaml:"db_name" env:"DB_NAME" env-required:"true"`
 	SSLMode  string `yaml:"ssl_mode" env-default:"disable"`
 }
 

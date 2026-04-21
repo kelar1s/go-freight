@@ -8,6 +8,7 @@ import (
 	"github.com/kelar1s/go-freight/internal/inventory/model"
 )
 
+//go:generate mockery --name=Repository --output=./mocks --outpkg=mocks --with-expecter=true
 type Repository interface {
 	CreateWarehouse(ctx context.Context, name string, location string) (model.Warehouse, error)
 	DeleteWarehouse(ctx context.Context, id int32) error
