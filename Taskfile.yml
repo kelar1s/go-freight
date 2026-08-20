@@ -4,7 +4,7 @@ dotenv: ['.env']
 
 vars:
   CONFIG_PATH: './config/local.yaml'
-  APP_ENTRY: 'cmd/gofreight/main.go'
+  APP_ENTRY: 'cmd/inventory/main.go'
   DOCKER_CONFIG: 'docker-compose.yml'
   DB_DSN: "user=postgres password={{.DB_PASSWORD}} dbname=gofreight host=localhost port=5433 sslmode=disable"
   MIGRATIONS_DIR: "db/migrations/inventory"

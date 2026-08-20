@@ -4,17 +4,14 @@ INSERT INTO products(warehouse_id, name, quantity, reserved) VALUES($1, $2, $3, 
 -- name: GetProduct :one
 SELECT * FROM products WHERE id = $1 LIMIT 1;
 
+-- name: DeleteProduct :one
+DELETE FROM products WHERE id = $1 RETURNING id;
+
 -- name: ListProductsByWarehouse :many
 SELECT * FROM products WHERE warehouse_id = $1 ORDER BY id;
 
--- name: SetProductQuantity :one
-UPDATE products SET quantity = $2 WHERE id = $1 RETURNING id;
-
 -- name: AddProductQuantity :one
-UPDATE products SET quantity = quantity + $2 WHERE id = $1 RETURNING id;
-
--- name: DeleteProduct :one
-DELETE FROM products WHERE id = $1 RETURNING id;
+UPDATE products SET quantity = quantity + $2 WHERE id = $1 AND (quantity + $2) >= reserved RETURNING id;
 
 -- name: ReserveProduct :one
 UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND (quantity - reserved) >= $2 RETURNING id;

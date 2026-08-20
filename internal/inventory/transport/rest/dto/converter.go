@@ -2,7 +2,10 @@ package dto
 
 import "github.com/kelar1s/go-freight/internal/inventory/model"
 
-func ToWarehouseResponse(warehouse model.Warehouse) WarehouseResponse {
+func ToWarehouseResponse(warehouse *model.Warehouse) WarehouseResponse {
+	if warehouse == nil {
+		return WarehouseResponse{}
+	}
 	return WarehouseResponse{
 		ID:        warehouse.ID,
 		Name:      warehouse.Name,
@@ -11,7 +14,10 @@ func ToWarehouseResponse(warehouse model.Warehouse) WarehouseResponse {
 	}
 }
 
-func ToProductResponse(product model.Product) ProductResponse {
+func ToProductResponse(product *model.Product) ProductResponse {
+	if product == nil {
+		return ProductResponse{}
+	}
 	return ProductResponse{
 		ID:          product.ID,
 		WarehouseID: product.WarehouseID,
@@ -27,8 +33,9 @@ func ToWarehouseResponseList(warehouses []model.Warehouse) []WarehouseResponse {
 		return []WarehouseResponse{}
 	}
 	res := make([]WarehouseResponse, len(warehouses))
-	for ind, val := range warehouses {
-		res[ind] = ToWarehouseResponse(val)
+
+	for idx := range warehouses {
+		res[idx] = ToWarehouseResponse(&warehouses[idx])
 	}
 	return res
 }
@@ -38,8 +45,9 @@ func ToProductResponseList(products []model.Product) []ProductResponse {
 		return []ProductResponse{}
 	}
 	res := make([]ProductResponse, len(products))
-	for ind, val := range products {
-		res[ind] = ToProductResponse(val)
+
+	for idx := range products {
+		res[idx] = ToProductResponse(&products[idx])
 	}
 	return res
 }

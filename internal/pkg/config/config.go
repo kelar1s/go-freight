@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -27,7 +28,13 @@ type Database struct {
 	User     string `yaml:"user" env:"DB_USER" env-required:"true"`
 	Password string `yaml:"password" env:"DB_PASSWORD" env-required:"true"`
 	DBName   string `yaml:"db_name" env:"DB_NAME" env-required:"true"`
-	SSLMode  string `yaml:"ssl_mode" env-default:"disable"`
+	SSLMode  string `yaml:"ssl_mode" env:"DB_SSLMODE" env-default:"disable"`
+}
+
+func (d Database) DSN() string {
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		d.Host, d.Port, d.User, d.Password, d.DBName, d.SSLMode,
+	)
 }
 
 func MustLoad() *Config {
