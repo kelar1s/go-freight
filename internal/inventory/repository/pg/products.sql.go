@@ -9,24 +9,24 @@ import (
 	"context"
 )
 
-const addProductQuantity = `-- name: AddProductQuantity :one
+const adjustProductQuantity = `-- name: AdjustProductQuantity :one
 UPDATE products SET quantity = quantity + $2 WHERE id = $1 AND (quantity + $2) >= reserved RETURNING id
 `
 
-type AddProductQuantityParams struct {
+type AdjustProductQuantityParams struct {
 	ID       int64
 	Quantity int64
 }
 
-func (q *Queries) AddProductQuantity(ctx context.Context, arg AddProductQuantityParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, addProductQuantity, arg.ID, arg.Quantity)
+func (q *Queries) AdjustProductQuantity(ctx context.Context, arg AdjustProductQuantityParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, adjustProductQuantity, arg.ID, arg.Quantity)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
 const cancelReservation = `-- name: CancelReservation :one
-UPDATE products SET reserved = reserved - $2 WHERE id = $1 AND reserved >= $2 RETURNING id
+UPDATE products SET reserved = reserved - $2 WHERE id = $1 AND $2 > 0 AND reserved >= $2 RETURNING id
 `
 
 type CancelReservationParams struct {
@@ -129,7 +129,7 @@ func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int64
 }
 
 const releaseProduct = `-- name: ReleaseProduct :one
-UPDATE products SET quantity = quantity - $2, reserved = reserved - $2 WHERE id = $1 AND reserved >= $2 AND quantity >= $2 RETURNING id
+UPDATE products SET quantity = quantity - $2, reserved = reserved - $2 WHERE id = $1 AND $2 > 0 AND reserved >= $2 AND quantity >= $2 RETURNING id
 `
 
 type ReleaseProductParams struct {
@@ -145,7 +145,7 @@ func (q *Queries) ReleaseProduct(ctx context.Context, arg ReleaseProductParams) 
 }
 
 const reserveProduct = `-- name: ReserveProduct :one
-UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND (quantity - reserved) >= $2 RETURNING id
+UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND $2 > 0 AND (quantity - reserved) >= $2 RETURNING id
 `
 
 type ReserveProductParams struct {

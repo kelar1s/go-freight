@@ -16,11 +16,7 @@ type CreateProductRequest struct {
 	Quantity    int64  `json:"quantity"`
 }
 
-type SetProductQuantityRequest struct {
-	Quantity int64 `json:"quantity"`
-}
-
-type AddProductQuantityRequest struct {
+type AdjustProductQuantityRequest struct {
 	Quantity int64 `json:"quantity"`
 }
 

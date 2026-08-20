@@ -93,10 +93,10 @@ func (r *ProductRepo) ListByWarehouse(ctx context.Context, id int64) ([]model.Pr
 	return listProducts, nil
 }
 
-func (r *ProductRepo) AddQuantity(ctx context.Context, id int64, quantity int64) error {
-	const op = "inventory.repository.product.add_quantity"
+func (r *ProductRepo) AdjustQuantity(ctx context.Context, id int64, quantity int64) error {
+	const op = "inventory.repository.product.adjust_quantity"
 
-	_, err := r.db.AddProductQuantity(ctx, pg.AddProductQuantityParams{
+	_, err := r.db.AdjustProductQuantity(ctx, pg.AdjustProductQuantityParams{
 		ID:       id,
 		Quantity: quantity,
 	})

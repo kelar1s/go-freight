@@ -10,14 +10,14 @@ DELETE FROM products WHERE id = $1 RETURNING id;
 -- name: ListProductsByWarehouse :many
 SELECT * FROM products WHERE warehouse_id = $1 ORDER BY id;
 
--- name: AddProductQuantity :one
+-- name: AdjustProductQuantity :one
 UPDATE products SET quantity = quantity + $2 WHERE id = $1 AND (quantity + $2) >= reserved RETURNING id;
 
 -- name: ReserveProduct :one
-UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND (quantity - reserved) >= $2 RETURNING id;
+UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND $2 > 0 AND (quantity - reserved) >= $2 RETURNING id;
 
 -- name: ReleaseProduct :one
-UPDATE products SET quantity = quantity - $2, reserved = reserved - $2 WHERE id = $1 AND reserved >= $2 AND quantity >= $2 RETURNING id;
+UPDATE products SET quantity = quantity - $2, reserved = reserved - $2 WHERE id = $1 AND $2 > 0 AND reserved >= $2 AND quantity >= $2 RETURNING id;
 
 -- name: CancelReservation :one
-UPDATE products SET reserved = reserved - $2 WHERE id = $1 AND reserved >= $2 RETURNING id;
+UPDATE products SET reserved = reserved - $2 WHERE id = $1 AND $2 > 0 AND reserved >= $2 RETURNING id;

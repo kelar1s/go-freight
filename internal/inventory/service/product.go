@@ -14,7 +14,7 @@ type ProductRepo interface {
 	Get(ctx context.Context, id int64) (*model.Product, error)
 	ListByWarehouse(ctx context.Context, warehouseID int64) ([]model.Product, error)
 	Delete(ctx context.Context, id int64) error
-	AddQuantity(ctx context.Context, id int64, quantity int64) error
+	AdjustQuantity(ctx context.Context, id int64, quantity int64) error
 	Reserve(ctx context.Context, id int64, quantity int64) error
 	Release(ctx context.Context, id int64, quantity int64) error
 	CancelReservation(ctx context.Context, id int64, quantity int64) error
@@ -95,18 +95,17 @@ func (s *ProductService) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *ProductService) AddQuantity(ctx context.Context, id int64, quantity int64) error {
+func (s *ProductService) AdjustQuantity(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.service.product.add_quantity"
 
 	if id <= 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidProductID)
 	}
-	// Если quantity == 0, запрос в БД делать бессмысленно
 	if quantity == 0 {
 		return fmt.Errorf("%s: %w", op, model.ErrInvalidQuantity)
 	}
 
-	if err := s.repo.AddQuantity(ctx, id, quantity); err != nil {
+	if err := s.repo.AdjustQuantity(ctx, id, quantity); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil

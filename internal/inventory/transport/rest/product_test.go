@@ -293,15 +293,12 @@ func TestProductHandler_Delete(t *testing.T) {
 }
 
 func TestProductHandler_StockOperations(t *testing.T) {
-	// Мы можем объединить тестирование AddQuantity, Reserve, Release и CancelReservation
-	// в одну функцию, так как их логика и обработка ошибок (handleStockError) абсолютно идентичны.
-
 	operations := []struct {
 		methodName string
 		route      string
 		handlerFn  func(h *rest.ProductHandler) http.HandlerFunc
 	}{
-		{"AddQuantity", "/add-quantity", func(h *rest.ProductHandler) http.HandlerFunc { return h.AddQuantity }},
+		{"AdjustQuantity", "/adjust", func(h *rest.ProductHandler) http.HandlerFunc { return h.AdjustQuantity }},
 		{"Reserve", "/reserve", func(h *rest.ProductHandler) http.HandlerFunc { return h.Reserve }},
 		{"Release", "/release", func(h *rest.ProductHandler) http.HandlerFunc { return h.Release }},
 		{"CancelReservation", "/cancel-reservation", func(h *rest.ProductHandler) http.HandlerFunc { return h.CancelReservation }},
@@ -357,6 +354,7 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":-5}`,
 					mockSetup: func(s *mocks.ProductService) {
+						// Здесь мы имитируем ошибку уровня бизнес-логики (когда сервис вернул ErrInvalidQuantity)
 						s.On(op.methodName, mock.Anything, int64(1), int64(-5)).Return(model.ErrInvalidQuantity).Once()
 					},
 					expectedStatus: http.StatusBadRequest,
@@ -391,9 +389,12 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					h := rest.NewProductHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
 
 					r := chi.NewRouter()
-					r.Post("/api/v1/products/{id}"+op.route, op.handlerFn(h))
 
-					req := httptest.NewRequest(http.MethodPost, "/api/v1/products/"+tc.productID+op.route, bytes.NewBufferString(tc.requestBody))
+					// ВАЖНО: Заменили .Post на .Patch для полного соответствия реальному роутеру!
+					r.Patch("/api/v1/products/{id}"+op.route, op.handlerFn(h))
+
+					// ВАЖНО: Отправляем запрос методом http.MethodPatch
+					req := httptest.NewRequest(http.MethodPatch, "/api/v1/products/"+tc.productID+op.route, bytes.NewBufferString(tc.requestBody))
 					rr := httptest.NewRecorder()
 					r.ServeHTTP(rr, req)
 

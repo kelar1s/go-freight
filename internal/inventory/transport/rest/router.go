@@ -7,7 +7,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	_ "github.com/kelar1s/go-freight/docs"
 	mwLogger "github.com/kelar1s/go-freight/internal/pkg/middleware/logger"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func NewRouter(
@@ -22,6 +24,8 @@ func NewRouter(
 	r.Use(mwLogger.New(log))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
+
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Route("/api/v1", func(r chi.Router) {
 
@@ -45,7 +49,7 @@ func NewRouter(
 				r.Get("/", productHandler.Get)
 				r.Delete("/", productHandler.Delete)
 
-				r.Patch("/add", productHandler.AddQuantity)
+				r.Patch("/adjust", productHandler.AdjustQuantity)
 				r.Patch("/reserve", productHandler.Reserve)
 				r.Patch("/release", productHandler.Release)
 				r.Patch("/cancel-reservation", productHandler.CancelReservation)

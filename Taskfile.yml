@@ -72,6 +72,11 @@ tasks:
       - go tool cover -html=coverage.out
       - rm coverage.out
 
+  swagger:
+    desc: "Сгенерировать документацию Swagger (OpenAPI)"
+    cmds:
+      - swag init -g {{.APP_ENTRY}} -o docs --parseDependency --parseInternal
+
   gen:
     desc: "Генерация моков и sqlc"
     cmds:

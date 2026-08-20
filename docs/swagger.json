@@ -1,0 +1,753 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Сервис управления складами и товарами.",
+        "title": "Go-Freight Inventory API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/products": {
+            "post": {
+                "description": "Создает товар с указанием ID склада, названия и начального количества",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Создать новый товар",
+                "parameters": [
+                    {
+                        "description": "Данные товара",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.CreateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Невалидные данные (например, пустое имя)",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "description": "Возвращает информацию о товаре и его остатках по ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Получить товар по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат ID",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Товар не найден",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет запись о товаре по его ID",
+                "tags": [
+                    "products"
+                ],
+                "summary": "Удалить товар",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/adjust": {
+            "patch": {
+                "description": "Увеличивает или уменьшает остаток товара на складе на переданную дельту",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Скорректировать остаток товара",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Дельта изменения остатка (+/-)",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.AdjustProductQuantityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Некорректный ID или тело запроса",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Товар не найден",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Конфликт: недостаточно товара на складе",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/cancel-reservation": {
+            "patch": {
+                "description": "Снимает резерв с товара",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Отменить резерв товара",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Количество для отмены брони",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.CancelReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Попытка отменить больше резерва, чем существует",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/release": {
+            "patch": {
+                "description": "Списывает товар со склада после успешной отгрузки",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Списать зарезервированный товар",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Количество для списания",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ReleaseProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Попытка списать больше, чем зарезервировано",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/reserve": {
+            "patch": {
+                "description": "Резервирует указанное количество товара",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Зарезервировать товар",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Количество для резерва",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ReserveProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Недостаточно свободного товара для резервирования",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/warehouses": {
+            "get": {
+                "description": "Возвращает список всех зарегистрированных складов в системе",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "warehouses"
+                ],
+                "summary": "Получить список всех складов",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.WarehouseResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Регистрирует новый склад с указанием названия и адреса",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "warehouses"
+                ],
+                "summary": "Создать новый склад",
+                "parameters": [
+                    {
+                        "description": "Данные склада",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.CreateWarehouseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.WarehouseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Отсутствует название или локация",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/warehouses/{id}": {
+            "get": {
+                "description": "Возвращает детальную информацию о складе по его идентификатору",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "warehouses"
+                ],
+                "summary": "Получить склад по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID склада",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.WarehouseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат ID",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Склад не найден",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Полностью обновляет название и локацию склада по его ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "warehouses"
+                ],
+                "summary": "Обновить данные склада",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID склада",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новые данные склада",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.UpdateWarehouseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Неверный формат ID или неполные данные",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Склад не найден",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет склад по его ID",
+                "tags": [
+                    "warehouses"
+                ],
+                "summary": "Удалить склад",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID склада",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/warehouses/{id}/products": {
+            "get": {
+                "description": "Возвращает все товары, привязанные к конкретному складу",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Получить список товаров на складе",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID склада",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ProductResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный формат ID склада",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.AdjustProductQuantityRequest": {
+            "type": "object",
+            "properties": {
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.CancelReservationRequest": {
+            "type": "object",
+            "properties": {
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.CreateProductRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "warehouse_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.CreateWarehouseRequest": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ProductResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "reserved": {
+                    "type": "integer"
+                },
+                "warehouse_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ReleaseProductRequest": {
+            "type": "object",
+            "properties": {
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ReserveProductRequest": {
+            "type": "object",
+            "properties": {
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.UpdateWarehouseRequest": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.WarehouseResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

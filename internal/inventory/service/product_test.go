@@ -128,7 +128,7 @@ func TestProductService_AddQuantity(t *testing.T) {
 			inputID:  1,
 			quantity: 10,
 			mockSetup: func(r *mocks.ProductRepo) {
-				r.EXPECT().AddQuantity(mock.Anything, int64(1), int64(10)).Return(nil).Once()
+				r.EXPECT().AdjustQuantity(mock.Anything, int64(1), int64(10)).Return(nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -144,7 +144,7 @@ func TestProductService_AddQuantity(t *testing.T) {
 			inputID:  1,
 			quantity: -100,
 			mockSetup: func(r *mocks.ProductRepo) {
-				r.EXPECT().AddQuantity(mock.Anything, int64(1), int64(-100)).Return(model.ErrNotEnoughQuantity).Once()
+				r.EXPECT().AdjustQuantity(mock.Anything, int64(1), int64(-100)).Return(model.ErrNotEnoughQuantity).Once()
 			},
 			expectedError: model.ErrNotEnoughQuantity,
 		},
@@ -156,7 +156,7 @@ func TestProductService_AddQuantity(t *testing.T) {
 			tc.mockSetup(mockRepo)
 			svc := service.NewProductService(mockRepo)
 
-			err := svc.AddQuantity(context.Background(), tc.inputID, tc.quantity)
+			err := svc.AdjustQuantity(context.Background(), tc.inputID, tc.quantity)
 			assert.ErrorIs(t, err, tc.expectedError)
 		})
 	}

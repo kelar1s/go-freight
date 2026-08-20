@@ -35,6 +35,17 @@ func NewWarehouseHandler(service WarehouseService, log *slog.Logger) *WarehouseH
 	}
 }
 
+// Create godoc
+// @Summary      Создать новый склад
+// @Description  Регистрирует новый склад с указанием названия и адреса
+// @Tags         warehouses
+// @Accept       json
+// @Produce      json
+// @Param        input body dto.CreateWarehouseRequest true "Данные склада"
+// @Success      201  {object} dto.WarehouseResponse
+// @Failure      400  {object} dto.ErrorResponse "Отсутствует название или локация"
+// @Failure      500  {object} dto.ErrorResponse
+// @Router       /warehouses [post]
 func (h *WarehouseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.create"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
@@ -67,6 +78,17 @@ func (h *WarehouseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get godoc
+// @Summary      Получить склад по ID
+// @Description  Возвращает детальную информацию о складе по его идентификатору
+// @Tags         warehouses
+// @Produce      json
+// @Param        id   path     int  true  "ID склада"
+// @Success      200  {object} dto.WarehouseResponse
+// @Failure      400  {object} dto.ErrorResponse "Неверный формат ID"
+// @Failure      404  {object} dto.ErrorResponse "Склад не найден"
+// @Failure      500  {object} dto.ErrorResponse
+// @Router       /warehouses/{id} [get]
 func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.get"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
@@ -104,6 +126,14 @@ func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// List godoc
+// @Summary      Получить список всех складов
+// @Description  Возвращает список всех зарегистрированных складов в системе
+// @Tags         warehouses
+// @Produce      json
+// @Success      200  {array}  dto.WarehouseResponse
+// @Failure      500  {object} dto.ErrorResponse
+// @Router       /warehouses [get]
 func (h *WarehouseHandler) List(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.list"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
@@ -123,6 +153,18 @@ func (h *WarehouseHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Update godoc
+// @Summary      Обновить данные склада
+// @Description  Полностью обновляет название и локацию склада по его ID
+// @Tags         warehouses
+// @Accept       json
+// @Param        id    path int                            true "ID склада"
+// @Param        input body dto.UpdateWarehouseRequest     true "Новые данные склада"
+// @Success      204   "No Content"
+// @Failure      400   {object} dto.ErrorResponse "Неверный формат ID или неполные данные"
+// @Failure      404   {object} dto.ErrorResponse "Склад не найден"
+// @Failure      500   {object} dto.ErrorResponse
+// @Router       /warehouses/{id} [put]
 func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.update"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
@@ -161,6 +203,16 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// Delete godoc
+// @Summary      Удалить склад
+// @Description  Удаляет склад по его ID
+// @Tags         warehouses
+// @Param        id   path int true "ID склада"
+// @Success      204  "No Content"
+// @Failure      400  {object} dto.ErrorResponse
+// @Failure      404  {object} dto.ErrorResponse
+// @Failure      500  {object} dto.ErrorResponse
+// @Router       /warehouses/{id} [delete]
 func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.delete"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))

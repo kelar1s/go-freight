@@ -22,12 +22,12 @@ func (_m *ProductService) EXPECT() *ProductService_Expecter {
 	return &ProductService_Expecter{mock: &_m.Mock}
 }
 
-// AddQuantity provides a mock function with given fields: ctx, id, quantity
-func (_m *ProductService) AddQuantity(ctx context.Context, id int64, quantity int64) error {
+// AdjustQuantity provides a mock function with given fields: ctx, id, quantity
+func (_m *ProductService) AdjustQuantity(ctx context.Context, id int64, quantity int64) error {
 	ret := _m.Called(ctx, id, quantity)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AddQuantity")
+		panic("no return value specified for AdjustQuantity")
 	}
 
 	var r0 error
@@ -40,32 +40,32 @@ func (_m *ProductService) AddQuantity(ctx context.Context, id int64, quantity in
 	return r0
 }
 
-// ProductService_AddQuantity_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddQuantity'
-type ProductService_AddQuantity_Call struct {
+// ProductService_AdjustQuantity_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AdjustQuantity'
+type ProductService_AdjustQuantity_Call struct {
 	*mock.Call
 }
 
-// AddQuantity is a helper method to define mock.On call
+// AdjustQuantity is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
 //   - quantity int64
-func (_e *ProductService_Expecter) AddQuantity(ctx interface{}, id interface{}, quantity interface{}) *ProductService_AddQuantity_Call {
-	return &ProductService_AddQuantity_Call{Call: _e.mock.On("AddQuantity", ctx, id, quantity)}
+func (_e *ProductService_Expecter) AdjustQuantity(ctx interface{}, id interface{}, quantity interface{}) *ProductService_AdjustQuantity_Call {
+	return &ProductService_AdjustQuantity_Call{Call: _e.mock.On("AdjustQuantity", ctx, id, quantity)}
 }
 
-func (_c *ProductService_AddQuantity_Call) Run(run func(ctx context.Context, id int64, quantity int64)) *ProductService_AddQuantity_Call {
+func (_c *ProductService_AdjustQuantity_Call) Run(run func(ctx context.Context, id int64, quantity int64)) *ProductService_AdjustQuantity_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
 
-func (_c *ProductService_AddQuantity_Call) Return(_a0 error) *ProductService_AddQuantity_Call {
+func (_c *ProductService_AdjustQuantity_Call) Return(_a0 error) *ProductService_AdjustQuantity_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *ProductService_AddQuantity_Call) RunAndReturn(run func(context.Context, int64, int64) error) *ProductService_AddQuantity_Call {
+func (_c *ProductService_AdjustQuantity_Call) RunAndReturn(run func(context.Context, int64, int64) error) *ProductService_AdjustQuantity_Call {
 	_c.Call.Return(run)
 	return _c
 }
