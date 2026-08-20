@@ -11,27 +11,27 @@ type UpdateWarehouseRequest struct {
 }
 
 type CreateProductRequest struct {
-	WarehouseID int32  `json:"warehouse_id"`
+	WarehouseID int64  `json:"warehouse_id"`
 	Name        string `json:"name"`
-	Quantity    int32  `json:"quantity"`
+	Quantity    int64  `json:"quantity"`
 }
 
 type SetProductQuantityRequest struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 }
 
 type AddProductQuantityRequest struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 }
 
 type ReserveProductRequest struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 }
 
 type ReleaseProductRequest struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 }
 
 type CancelReservationRequest struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 }

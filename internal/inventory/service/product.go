@@ -11,13 +11,13 @@ import (
 //go:generate mockery --name=ProductRepo --output=./mocks --outpkg=mocks --with-expecter=true
 type ProductRepo interface {
 	Create(ctx context.Context, product *model.Product) error
-	Get(ctx context.Context, id int32) (*model.Product, error)
-	ListByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error)
-	Delete(ctx context.Context, id int32) error
-	AddQuantity(ctx context.Context, id int32, quantity int32) error
-	Reserve(ctx context.Context, id int32, quantity int32) error
-	Release(ctx context.Context, id int32, quantity int32) error
-	CancelReservation(ctx context.Context, id int32, quantity int32) error
+	Get(ctx context.Context, id int64) (*model.Product, error)
+	ListByWarehouse(ctx context.Context, warehouseID int64) ([]model.Product, error)
+	Delete(ctx context.Context, id int64) error
+	AddQuantity(ctx context.Context, id int64, quantity int64) error
+	Reserve(ctx context.Context, id int64, quantity int64) error
+	Release(ctx context.Context, id int64, quantity int64) error
+	CancelReservation(ctx context.Context, id int64, quantity int64) error
 }
 
 type ProductService struct {
@@ -30,7 +30,7 @@ func NewProductService(repo ProductRepo) *ProductService {
 	}
 }
 
-func (s *ProductService) Create(ctx context.Context, warehouseID int32, name string, quantity int32) (*model.Product, error) {
+func (s *ProductService) Create(ctx context.Context, warehouseID int64, name string, quantity int64) (*model.Product, error) {
 	const op = "inventory.service.product.create"
 
 	if warehouseID <= 0 {
@@ -57,7 +57,7 @@ func (s *ProductService) Create(ctx context.Context, warehouseID int32, name str
 	return product, nil
 }
 
-func (s *ProductService) Get(ctx context.Context, id int32) (*model.Product, error) {
+func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, error) {
 	const op = "inventory.service.product.get"
 
 	if id <= 0 {
@@ -70,7 +70,7 @@ func (s *ProductService) Get(ctx context.Context, id int32) (*model.Product, err
 	return product, nil
 }
 
-func (s *ProductService) ListByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error) {
+func (s *ProductService) ListByWarehouse(ctx context.Context, warehouseID int64) ([]model.Product, error) {
 	const op = "inventory.service.product.list_by_warehouse"
 
 	if warehouseID <= 0 {
@@ -83,7 +83,7 @@ func (s *ProductService) ListByWarehouse(ctx context.Context, warehouseID int32)
 	return products, nil
 }
 
-func (s *ProductService) Delete(ctx context.Context, id int32) error {
+func (s *ProductService) Delete(ctx context.Context, id int64) error {
 	const op = "inventory.service.product.delete"
 
 	if id <= 0 {
@@ -95,7 +95,7 @@ func (s *ProductService) Delete(ctx context.Context, id int32) error {
 	return nil
 }
 
-func (s *ProductService) AddQuantity(ctx context.Context, id int32, quantity int32) error {
+func (s *ProductService) AddQuantity(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.service.product.add_quantity"
 
 	if id <= 0 {
@@ -112,7 +112,7 @@ func (s *ProductService) AddQuantity(ctx context.Context, id int32, quantity int
 	return nil
 }
 
-func (s *ProductService) Reserve(ctx context.Context, id int32, quantity int32) error {
+func (s *ProductService) Reserve(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.service.product.reserve"
 
 	if id <= 0 {
@@ -128,7 +128,7 @@ func (s *ProductService) Reserve(ctx context.Context, id int32, quantity int32) 
 	return nil
 }
 
-func (s *ProductService) Release(ctx context.Context, id int32, quantity int32) error {
+func (s *ProductService) Release(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.service.product.release"
 
 	if id <= 0 {
@@ -144,7 +144,7 @@ func (s *ProductService) Release(ctx context.Context, id int32, quantity int32) 
 	return nil
 }
 
-func (s *ProductService) CancelReservation(ctx context.Context, id int32, quantity int32) error {
+func (s *ProductService) CancelReservation(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.service.product.cancel_reservation"
 
 	if id <= 0 {

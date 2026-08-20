@@ -25,6 +25,11 @@ tasks:
     cmds:
       - docker compose up -d db
       
+  migrate-create:
+    desc: "Создать новый файл миграции: task migrate-create -- name_of_migration"
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} create {{.CLI_ARGS}} sql
+      
   migrate-up:
     desc: "Накатить миграции склада"
     cmds:
@@ -34,6 +39,11 @@ tasks:
     desc: "Проверить статус миграций"
     cmds:
       - goose -dir {{.MIGRATIONS_DIR}} postgres "{{.DB_DSN}}" status
+
+  migrate-reset:
+    desc: "Сбросить все миграции"
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} postgres "{{.DB_DSN}}" reset
 
   down:
     desc: "Остановить и удалить контейнеры и сети"

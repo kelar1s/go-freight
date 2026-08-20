@@ -35,7 +35,7 @@ func (r *WarehouseRepo) Create(ctx context.Context, warehouse *model.Warehouse) 
 	return nil
 }
 
-func (r *WarehouseRepo) Get(ctx context.Context, id int32) (*model.Warehouse, error) {
+func (r *WarehouseRepo) Get(ctx context.Context, id int64) (*model.Warehouse, error) {
 	const op = "inventory.repository.warehouse.get"
 
 	pgWarehouse, err := r.db.GetWarehouse(ctx, id)
@@ -89,7 +89,7 @@ func (r *WarehouseRepo) Update(ctx context.Context, warehouse *model.Warehouse) 
 	return nil
 }
 
-func (r *WarehouseRepo) Delete(ctx context.Context, id int32) error {
+func (r *WarehouseRepo) Delete(ctx context.Context, id int64) error {
 	const op = "inventory.repository.warehouse.delete"
 
 	_, err := r.db.DeleteWarehouse(ctx, id)

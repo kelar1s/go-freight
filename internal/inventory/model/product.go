@@ -3,10 +3,10 @@ package model
 import "time"
 
 type Product struct {
-	ID          int32
-	WarehouseID int32
+	ID          int64
+	WarehouseID int64
 	Name        string
-	Quantity    int32
-	Reserved    int32
+	Quantity    int64
+	Reserved    int64
 	CreatedAt   time.Time
 }

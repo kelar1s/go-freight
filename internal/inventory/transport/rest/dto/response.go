@@ -3,18 +3,18 @@ package dto
 import "time"
 
 type WarehouseResponse struct {
-	ID        int32     `json:"id"`
+	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
 	Location  string    `json:"location"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type ProductResponse struct {
-	ID          int32     `json:"id"`
-	WarehouseID int32     `json:"warehouse_id"`
+	ID          int64     `json:"id"`
+	WarehouseID int64     `json:"warehouse_id"`
 	Name        string    `json:"name"`
-	Quantity    int32     `json:"quantity"`
-	Reserved    int32     `json:"reserved"`
+	Quantity    int64     `json:"quantity"`
+	Reserved    int64     `json:"reserved"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 

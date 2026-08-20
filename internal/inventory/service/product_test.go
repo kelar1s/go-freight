@@ -14,9 +14,9 @@ import (
 func TestProductService_Create(t *testing.T) {
 	type TestCase struct {
 		name           string
-		warehouseID    int32
+		warehouseID    int64
 		inputName      string
-		quantity       int32
+		quantity       int64
 		mockSetup      func(r *mocks.ProductRepo)
 		expectedResult *model.Product
 		expectedError  error
@@ -82,7 +82,7 @@ func TestProductService_Create(t *testing.T) {
 func TestProductService_Get(t *testing.T) {
 	type TestCase struct {
 		name           string
-		inputID        int32
+		inputID        int64
 		mockSetup      func(r *mocks.ProductRepo)
 		expectedResult *model.Product
 		expectedError  error
@@ -93,7 +93,7 @@ func TestProductService_Get(t *testing.T) {
 			name:    "Success",
 			inputID: 1,
 			mockSetup: func(r *mocks.ProductRepo) {
-				r.EXPECT().Get(mock.Anything, int32(1)).Return(&model.Product{ID: 1, Name: "Box"}, nil).Once()
+				r.EXPECT().Get(mock.Anything, int64(1)).Return(&model.Product{ID: 1, Name: "Box"}, nil).Once()
 			},
 			expectedResult: &model.Product{ID: 1, Name: "Box"},
 			expectedError:  nil,
@@ -116,8 +116,8 @@ func TestProductService_Get(t *testing.T) {
 func TestProductService_AddQuantity(t *testing.T) {
 	type TestCase struct {
 		name          string
-		inputID       int32
-		quantity      int32
+		inputID       int64
+		quantity      int64
 		mockSetup     func(r *mocks.ProductRepo)
 		expectedError error
 	}
@@ -128,7 +128,7 @@ func TestProductService_AddQuantity(t *testing.T) {
 			inputID:  1,
 			quantity: 10,
 			mockSetup: func(r *mocks.ProductRepo) {
-				r.EXPECT().AddQuantity(mock.Anything, int32(1), int32(10)).Return(nil).Once()
+				r.EXPECT().AddQuantity(mock.Anything, int64(1), int64(10)).Return(nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -144,7 +144,7 @@ func TestProductService_AddQuantity(t *testing.T) {
 			inputID:  1,
 			quantity: -100,
 			mockSetup: func(r *mocks.ProductRepo) {
-				r.EXPECT().AddQuantity(mock.Anything, int32(1), int32(-100)).Return(model.ErrNotEnoughQuantity).Once()
+				r.EXPECT().AddQuantity(mock.Anything, int64(1), int64(-100)).Return(model.ErrNotEnoughQuantity).Once()
 			},
 			expectedError: model.ErrNotEnoughQuantity,
 		},
@@ -165,8 +165,8 @@ func TestProductService_AddQuantity(t *testing.T) {
 func TestProductService_Reserve(t *testing.T) {
 	type TestCase struct {
 		name          string
-		inputID       int32
-		quantity      int32
+		inputID       int64
+		quantity      int64
 		mockSetup     func(r *mocks.ProductRepo)
 		expectedError error
 	}
@@ -176,7 +176,7 @@ func TestProductService_Reserve(t *testing.T) {
 			name:          "Success",
 			inputID:       1,
 			quantity:      5,
-			mockSetup:     func(r *mocks.ProductRepo) { r.EXPECT().Reserve(mock.Anything, int32(1), int32(5)).Return(nil).Once() },
+			mockSetup:     func(r *mocks.ProductRepo) { r.EXPECT().Reserve(mock.Anything, int64(1), int64(5)).Return(nil).Once() },
 			expectedError: nil,
 		},
 		{

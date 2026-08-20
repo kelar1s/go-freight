@@ -31,7 +31,7 @@ func TestProductHandler_Create(t *testing.T) {
 			requestBody: `{"warehouse_id":1,"name":"Box","quantity":10}`,
 			mockSetup: func(s *mocks.ProductService) {
 				p := &model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10, Reserved: 0, CreatedAt: mockTime}
-				s.On("Create", mock.Anything, int32(1), "Box", int32(10)).Return(p, nil).Once()
+				s.On("Create", mock.Anything, int64(1), "Box", int64(10)).Return(p, nil).Once()
 			},
 			expectedStatus: http.StatusCreated,
 			expectedBody:   `{"id":1,"warehouse_id":1,"name":"Box","quantity":10,"reserved":0,"created_at":"2026-04-11T12:00:00Z"}`,
@@ -47,7 +47,7 @@ func TestProductHandler_Create(t *testing.T) {
 			name:        "Bad Request - Validation Error",
 			requestBody: `{"warehouse_id":0,"name":"Box","quantity":10}`,
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Create", mock.Anything, int32(0), "Box", int32(10)).Return(nil, model.ErrInvalidWarehouseID).Once()
+				s.On("Create", mock.Anything, int64(0), "Box", int64(10)).Return(nil, model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -56,7 +56,7 @@ func TestProductHandler_Create(t *testing.T) {
 			name:        "Internal Server Error",
 			requestBody: `{"warehouse_id":1,"name":"Box","quantity":10}`,
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Create", mock.Anything, int32(1), "Box", int32(10)).Return(nil, errors.New("db error")).Once()
+				s.On("Create", mock.Anything, int64(1), "Box", int64(10)).Return(nil, errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"internal server error"}`,
@@ -97,7 +97,7 @@ func TestProductHandler_Get(t *testing.T) {
 			productID: "1",
 			mockSetup: func(s *mocks.ProductService) {
 				p := &model.Product{ID: 1, WarehouseID: 1, Name: "A", Quantity: 5, Reserved: 2, CreatedAt: mockTime}
-				s.On("Get", mock.Anything, int32(1)).Return(p, nil).Once()
+				s.On("Get", mock.Anything, int64(1)).Return(p, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"id":1,"warehouse_id":1,"name":"A","quantity":5,"reserved":2,"created_at":"2026-04-11T12:00:00Z"}`,
@@ -113,7 +113,7 @@ func TestProductHandler_Get(t *testing.T) {
 			name:      "Bad Request - Invalid ID Logic",
 			productID: "0",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Get", mock.Anything, int32(0)).Return(nil, model.ErrInvalidProductID).Once()
+				s.On("Get", mock.Anything, int64(0)).Return(nil, model.ErrInvalidProductID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid product id"}`,
@@ -122,7 +122,7 @@ func TestProductHandler_Get(t *testing.T) {
 			name:      "Not Found",
 			productID: "99",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Get", mock.Anything, int32(99)).Return(nil, model.ErrProductNotFound).Once()
+				s.On("Get", mock.Anything, int64(99)).Return(nil, model.ErrProductNotFound).Once()
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   `{"error":"product not found"}`,
@@ -131,7 +131,7 @@ func TestProductHandler_Get(t *testing.T) {
 			name:      "Internal Server Error",
 			productID: "1",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Get", mock.Anything, int32(1)).Return(nil, errors.New("db error")).Once()
+				s.On("Get", mock.Anything, int64(1)).Return(nil, errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"internal server error"}`,
@@ -172,7 +172,7 @@ func TestProductHandler_ListByWarehouse(t *testing.T) {
 			warehouseID: "1",
 			mockSetup: func(s *mocks.ProductService) {
 				pList := []model.Product{{ID: 1, WarehouseID: 1, Name: "P1", Quantity: 10, Reserved: 0, CreatedAt: mockTime}}
-				s.On("ListByWarehouse", mock.Anything, int32(1)).Return(pList, nil).Once()
+				s.On("ListByWarehouse", mock.Anything, int64(1)).Return(pList, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `[{"id":1,"warehouse_id":1,"name":"P1","quantity":10,"reserved":0,"created_at":"2026-04-11T12:00:00Z"}]`,
@@ -188,7 +188,7 @@ func TestProductHandler_ListByWarehouse(t *testing.T) {
 			name:        "Bad Request - Invalid ID Logic",
 			warehouseID: "0",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("ListByWarehouse", mock.Anything, int32(0)).Return(nil, model.ErrInvalidWarehouseID).Once()
+				s.On("ListByWarehouse", mock.Anything, int64(0)).Return(nil, model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -197,7 +197,7 @@ func TestProductHandler_ListByWarehouse(t *testing.T) {
 			name:        "Internal Server Error",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("ListByWarehouse", mock.Anything, int32(1)).Return(nil, errors.New("db error")).Once()
+				s.On("ListByWarehouse", mock.Anything, int64(1)).Return(nil, errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"internal server error"}`,
@@ -238,7 +238,7 @@ func TestProductHandler_Delete(t *testing.T) {
 			name:      "Success",
 			productID: "1",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Delete", mock.Anything, int32(1)).Return(nil).Once()
+				s.On("Delete", mock.Anything, int64(1)).Return(nil).Once()
 			},
 			expectedStatus: http.StatusNoContent,
 		},
@@ -252,7 +252,7 @@ func TestProductHandler_Delete(t *testing.T) {
 			name:      "Bad Request - Invalid ID Logic",
 			productID: "0",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Delete", mock.Anything, int32(0)).Return(model.ErrInvalidProductID).Once()
+				s.On("Delete", mock.Anything, int64(0)).Return(model.ErrInvalidProductID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -260,7 +260,7 @@ func TestProductHandler_Delete(t *testing.T) {
 			name:      "Not Found",
 			productID: "99",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Delete", mock.Anything, int32(99)).Return(model.ErrProductNotFound).Once()
+				s.On("Delete", mock.Anything, int64(99)).Return(model.ErrProductNotFound).Once()
 			},
 			expectedStatus: http.StatusNotFound,
 		},
@@ -268,7 +268,7 @@ func TestProductHandler_Delete(t *testing.T) {
 			name:      "Internal Server Error",
 			productID: "1",
 			mockSetup: func(s *mocks.ProductService) {
-				s.On("Delete", mock.Anything, int32(1)).Return(errors.New("db error")).Once()
+				s.On("Delete", mock.Anything, int64(1)).Return(errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -322,7 +322,7 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":5}`,
 					mockSetup: func(s *mocks.ProductService) {
-						s.On(op.methodName, mock.Anything, int32(1), int32(5)).Return(nil).Once()
+						s.On(op.methodName, mock.Anything, int64(1), int64(5)).Return(nil).Once()
 					},
 					expectedStatus: http.StatusNoContent,
 				},
@@ -347,7 +347,7 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":5}`,
 					mockSetup: func(s *mocks.ProductService) {
-						s.On(op.methodName, mock.Anything, int32(1), int32(5)).Return(model.ErrProductNotFound).Once()
+						s.On(op.methodName, mock.Anything, int64(1), int64(5)).Return(model.ErrProductNotFound).Once()
 					},
 					expectedStatus: http.StatusNotFound,
 					expectedBody:   `{"error":"product not found"}`,
@@ -357,7 +357,7 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":-5}`,
 					mockSetup: func(s *mocks.ProductService) {
-						s.On(op.methodName, mock.Anything, int32(1), int32(-5)).Return(model.ErrInvalidQuantity).Once()
+						s.On(op.methodName, mock.Anything, int64(1), int64(-5)).Return(model.ErrInvalidQuantity).Once()
 					},
 					expectedStatus: http.StatusBadRequest,
 					expectedBody:   `{"error":"invalid product quantity"}`,
@@ -367,7 +367,7 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":100}`,
 					mockSetup: func(s *mocks.ProductService) {
-						s.On(op.methodName, mock.Anything, int32(1), int32(100)).Return(model.ErrNotEnoughQuantity).Once()
+						s.On(op.methodName, mock.Anything, int64(1), int64(100)).Return(model.ErrNotEnoughQuantity).Once()
 					},
 					expectedStatus: http.StatusConflict,
 					expectedBody:   `{"error":"not enough quantity"}`,
@@ -377,7 +377,7 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":5}`,
 					mockSetup: func(s *mocks.ProductService) {
-						s.On(op.methodName, mock.Anything, int32(1), int32(5)).Return(errors.New("db error")).Once()
+						s.On(op.methodName, mock.Anything, int64(1), int64(5)).Return(errors.New("db error")).Once()
 					},
 					expectedStatus: http.StatusInternalServerError,
 					expectedBody:   `{"error":"internal server error"}`,

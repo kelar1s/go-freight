@@ -108,7 +108,7 @@ func TestWarehouseHandler_Get(t *testing.T) {
 			name:        "Success",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Get", mock.Anything, int32(1)).
+				s.On("Get", mock.Anything, int64(1)).
 					Return(&model.Warehouse{ID: 1, Name: "A", Location: "B", CreatedAt: mockTime}, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
@@ -125,7 +125,7 @@ func TestWarehouseHandler_Get(t *testing.T) {
 			name:        "Bad Request - Invalid ID logic",
 			warehouseID: "0",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Get", mock.Anything, int32(0)).Return(nil, model.ErrInvalidWarehouseID).Once()
+				s.On("Get", mock.Anything, int64(0)).Return(nil, model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -134,7 +134,7 @@ func TestWarehouseHandler_Get(t *testing.T) {
 			name:        "Not Found",
 			warehouseID: "99",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Get", mock.Anything, int32(99)).Return(nil, model.ErrWarehouseNotFound).Once()
+				s.On("Get", mock.Anything, int64(99)).Return(nil, model.ErrWarehouseNotFound).Once()
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   `{"error":"warehouse not found"}`,
@@ -143,7 +143,7 @@ func TestWarehouseHandler_Get(t *testing.T) {
 			name:        "Internal Server Error",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Get", mock.Anything, int32(1)).Return(nil, errors.New("db error")).Once()
+				s.On("Get", mock.Anything, int64(1)).Return(nil, errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"internal server error"}`,
@@ -231,7 +231,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			warehouseID: "1",
 			requestBody: `{"name":"New","location":"Loc"}`,
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Update", mock.Anything, int32(1), "New", "Loc").Return(nil).Once()
+				s.On("Update", mock.Anything, int64(1), "New", "Loc").Return(nil).Once()
 			},
 			expectedStatus: http.StatusNoContent,
 		},
@@ -256,7 +256,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			warehouseID: "1",
 			requestBody: `{"name":"","location":"Loc"}`,
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Update", mock.Anything, int32(1), "", "Loc").Return(model.ErrEmptyWarehouseName).Once()
+				s.On("Update", mock.Anything, int64(1), "", "Loc").Return(model.ErrEmptyWarehouseName).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"warehouse name cannot be empty"}`,
@@ -266,7 +266,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			warehouseID: "1",
 			requestBody: `{"name":"New","location":"Loc"}`,
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Update", mock.Anything, int32(1), "New", "Loc").Return(model.ErrWarehouseNotFound).Once()
+				s.On("Update", mock.Anything, int64(1), "New", "Loc").Return(model.ErrWarehouseNotFound).Once()
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   `{"error":"warehouse not found"}`,
@@ -276,7 +276,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			warehouseID: "1",
 			requestBody: `{"name":"New","location":"Loc"}`,
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Update", mock.Anything, int32(1), "New", "Loc").Return(errors.New("db error")).Once()
+				s.On("Update", mock.Anything, int64(1), "New", "Loc").Return(errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"internal server error"}`,
@@ -316,7 +316,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			name:        "Success",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Delete", mock.Anything, int32(1)).Return(nil).Once()
+				s.On("Delete", mock.Anything, int64(1)).Return(nil).Once()
 			},
 			expectedStatus: http.StatusNoContent,
 		},
@@ -331,7 +331,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			name:        "Bad Request - Invalid ID logic",
 			warehouseID: "0",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Delete", mock.Anything, int32(0)).Return(model.ErrInvalidWarehouseID).Once()
+				s.On("Delete", mock.Anything, int64(0)).Return(model.ErrInvalidWarehouseID).Once()
 			},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid warehouse id"}`,
@@ -340,7 +340,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			name:        "Not Found",
 			warehouseID: "99",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Delete", mock.Anything, int32(99)).Return(model.ErrWarehouseNotFound).Once()
+				s.On("Delete", mock.Anything, int64(99)).Return(model.ErrWarehouseNotFound).Once()
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   `{"error":"warehouse not found"}`,
@@ -349,7 +349,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			name:        "Internal Server Error",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.WarehouseService) {
-				s.On("Delete", mock.Anything, int32(1)).Return(errors.New("db error")).Once()
+				s.On("Delete", mock.Anything, int64(1)).Return(errors.New("db error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"internal server error"}`,

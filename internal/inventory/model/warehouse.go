@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Warehouse struct {
-	ID        int32
+	ID        int64
 	Name      string
 	Location  string
 	CreatedAt time.Time

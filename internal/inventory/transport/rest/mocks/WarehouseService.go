@@ -83,7 +83,7 @@ func (_c *WarehouseService_Create_Call) RunAndReturn(run func(context.Context, s
 }
 
 // Delete provides a mock function with given fields: ctx, id
-func (_m *WarehouseService) Delete(ctx context.Context, id int32) error {
+func (_m *WarehouseService) Delete(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -91,7 +91,7 @@ func (_m *WarehouseService) Delete(ctx context.Context, id int32) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -107,14 +107,14 @@ type WarehouseService_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 func (_e *WarehouseService_Expecter) Delete(ctx interface{}, id interface{}) *WarehouseService_Delete_Call {
 	return &WarehouseService_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *WarehouseService_Delete_Call) Run(run func(ctx context.Context, id int32)) *WarehouseService_Delete_Call {
+func (_c *WarehouseService_Delete_Call) Run(run func(ctx context.Context, id int64)) *WarehouseService_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -124,13 +124,13 @@ func (_c *WarehouseService_Delete_Call) Return(_a0 error) *WarehouseService_Dele
 	return _c
 }
 
-func (_c *WarehouseService_Delete_Call) RunAndReturn(run func(context.Context, int32) error) *WarehouseService_Delete_Call {
+func (_c *WarehouseService_Delete_Call) RunAndReturn(run func(context.Context, int64) error) *WarehouseService_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *WarehouseService) Get(ctx context.Context, id int32) (*model.Warehouse, error) {
+func (_m *WarehouseService) Get(ctx context.Context, id int64) (*model.Warehouse, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -139,10 +139,10 @@ func (_m *WarehouseService) Get(ctx context.Context, id int32) (*model.Warehouse
 
 	var r0 *model.Warehouse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) (*model.Warehouse, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Warehouse, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int32) *model.Warehouse); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Warehouse); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -150,7 +150,7 @@ func (_m *WarehouseService) Get(ctx context.Context, id int32) (*model.Warehouse
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -166,14 +166,14 @@ type WarehouseService_Get_Call struct {
 
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 func (_e *WarehouseService_Expecter) Get(ctx interface{}, id interface{}) *WarehouseService_Get_Call {
 	return &WarehouseService_Get_Call{Call: _e.mock.On("Get", ctx, id)}
 }
 
-func (_c *WarehouseService_Get_Call) Run(run func(ctx context.Context, id int32)) *WarehouseService_Get_Call {
+func (_c *WarehouseService_Get_Call) Run(run func(ctx context.Context, id int64)) *WarehouseService_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -183,7 +183,7 @@ func (_c *WarehouseService_Get_Call) Return(_a0 *model.Warehouse, _a1 error) *Wa
 	return _c
 }
 
-func (_c *WarehouseService_Get_Call) RunAndReturn(run func(context.Context, int32) (*model.Warehouse, error)) *WarehouseService_Get_Call {
+func (_c *WarehouseService_Get_Call) RunAndReturn(run func(context.Context, int64) (*model.Warehouse, error)) *WarehouseService_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -247,7 +247,7 @@ func (_c *WarehouseService_List_Call) RunAndReturn(run func(context.Context) ([]
 }
 
 // Update provides a mock function with given fields: ctx, id, name, location
-func (_m *WarehouseService) Update(ctx context.Context, id int32, name string, location string) error {
+func (_m *WarehouseService) Update(ctx context.Context, id int64, name string, location string) error {
 	ret := _m.Called(ctx, id, name, location)
 
 	if len(ret) == 0 {
@@ -255,7 +255,7 @@ func (_m *WarehouseService) Update(ctx context.Context, id int32, name string, l
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32, string, string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, string) error); ok {
 		r0 = rf(ctx, id, name, location)
 	} else {
 		r0 = ret.Error(0)
@@ -271,16 +271,16 @@ type WarehouseService_Update_Call struct {
 
 // Update is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 //   - name string
 //   - location string
 func (_e *WarehouseService_Expecter) Update(ctx interface{}, id interface{}, name interface{}, location interface{}) *WarehouseService_Update_Call {
 	return &WarehouseService_Update_Call{Call: _e.mock.On("Update", ctx, id, name, location)}
 }
 
-func (_c *WarehouseService_Update_Call) Run(run func(ctx context.Context, id int32, name string, location string)) *WarehouseService_Update_Call {
+func (_c *WarehouseService_Update_Call) Run(run func(ctx context.Context, id int64, name string, location string)) *WarehouseService_Update_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32), args[2].(string), args[3].(string))
+		run(args[0].(context.Context), args[1].(int64), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -290,7 +290,7 @@ func (_c *WarehouseService_Update_Call) Return(_a0 error) *WarehouseService_Upda
 	return _c
 }
 
-func (_c *WarehouseService_Update_Call) RunAndReturn(run func(context.Context, int32, string, string) error) *WarehouseService_Update_Call {
+func (_c *WarehouseService_Update_Call) RunAndReturn(run func(context.Context, int64, string, string) error) *WarehouseService_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -16,14 +16,14 @@ import (
 
 //go:generate mockery --name=ProductService --output=./mocks --outpkg=mocks --with-expecter=true
 type ProductService interface {
-	Create(ctx context.Context, warehouseID int32, name string, quantity int32) (*model.Product, error)
-	Get(ctx context.Context, id int32) (*model.Product, error)
-	ListByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error)
-	Delete(ctx context.Context, id int32) error
-	AddQuantity(ctx context.Context, id int32, quantity int32) error
-	Reserve(ctx context.Context, id int32, quantity int32) error
-	Release(ctx context.Context, id int32, quantity int32) error
-	CancelReservation(ctx context.Context, id int32, quantity int32) error
+	Create(ctx context.Context, warehouseID int64, name string, quantity int64) (*model.Product, error)
+	Get(ctx context.Context, id int64) (*model.Product, error)
+	ListByWarehouse(ctx context.Context, warehouseID int64) ([]model.Product, error)
+	Delete(ctx context.Context, id int64) error
+	AddQuantity(ctx context.Context, id int64, quantity int64) error
+	Reserve(ctx context.Context, id int64, quantity int64) error
+	Release(ctx context.Context, id int64, quantity int64) error
+	CancelReservation(ctx context.Context, id int64, quantity int64) error
 }
 
 type ProductHandler struct {
@@ -74,7 +74,7 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.product.get"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse product id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid product ID format")
@@ -83,7 +83,7 @@ func (h *ProductHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	log = log.With(slog.Int("product_id", int(productID)))
 
-	product, err := h.service.Get(r.Context(), int32(productID))
+	product, err := h.service.Get(r.Context(), int64(productID))
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidProductID):
@@ -111,7 +111,7 @@ func (h *ProductHandler) ListByWarehouse(w http.ResponseWriter, r *http.Request)
 	const op = "rest.product.list_by_warehouse"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
@@ -120,7 +120,7 @@ func (h *ProductHandler) ListByWarehouse(w http.ResponseWriter, r *http.Request)
 
 	log = log.With(slog.Int("warehouse_id", int(warehouseID)))
 
-	products, err := h.service.ListByWarehouse(r.Context(), int32(warehouseID))
+	products, err := h.service.ListByWarehouse(r.Context(), int64(warehouseID))
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidWarehouseID):
@@ -145,7 +145,7 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.product.delete"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse product id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid product ID format")
@@ -154,7 +154,7 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	log = log.With(slog.Int("product_id", int(productID)))
 
-	err = h.service.Delete(r.Context(), int32(productID))
+	err = h.service.Delete(r.Context(), int64(productID))
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidProductID):
@@ -176,7 +176,7 @@ func (h *ProductHandler) AddQuantity(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.product.add_quantity"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse product id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid product ID format")
@@ -192,7 +192,7 @@ func (h *ProductHandler) AddQuantity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.AddQuantity(r.Context(), int32(productID), req.Quantity)
+	err = h.service.AddQuantity(r.Context(), int64(productID), req.Quantity)
 	if err != nil {
 		h.handleStockError(w, log, err)
 		return
@@ -204,7 +204,7 @@ func (h *ProductHandler) Reserve(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.product.reserve"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse product id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid product ID format")
@@ -220,7 +220,7 @@ func (h *ProductHandler) Reserve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.Reserve(r.Context(), int32(productID), req.Quantity)
+	err = h.service.Reserve(r.Context(), int64(productID), req.Quantity)
 	if err != nil {
 		h.handleStockError(w, log, err)
 		return
@@ -248,7 +248,7 @@ func (h *ProductHandler) Release(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.Release(r.Context(), int32(productID), req.Quantity)
+	err = h.service.Release(r.Context(), int64(productID), req.Quantity)
 	if err != nil {
 		h.handleStockError(w, log, err)
 		return
@@ -276,7 +276,7 @@ func (h *ProductHandler) CancelReservation(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = h.service.CancelReservation(r.Context(), int32(productID), req.Quantity)
+	err = h.service.CancelReservation(r.Context(), int64(productID), req.Quantity)
 	if err != nil {
 		h.handleStockError(w, log, err)
 		return

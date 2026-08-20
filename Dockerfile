@@ -1,21 +1,24 @@
+# Этап сборки
 FROM golang:1.26-alpine AS builder
 
-WORKDIR /app
+WORKDIR /src
 
 COPY go.mod go.sum ./
 RUN go mod download
+
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /gofreight-app ./cmd/gofreight/main.go
-
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/gofreight-app ./cmd/inventory/main.go
 
 FROM alpine:latest
 
-WORKDIR /
+WORKDIR /app
 
-COPY --from=builder /gofreight-app /gofreight-app
-COPY config/ /config/
+RUN apk --no-cache add ca-certificates tzdata
+
+COPY --from=builder /bin/gofreight-app ./app
+COPY --from=builder /src/config/ ./config/
 
 EXPOSE 8080
 
-ENTRYPOINT ["/gofreight-app"]
+ENTRYPOINT ["./app"]

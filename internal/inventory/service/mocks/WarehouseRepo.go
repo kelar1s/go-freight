@@ -70,7 +70,7 @@ func (_c *WarehouseRepo_Create_Call) RunAndReturn(run func(context.Context, *mod
 }
 
 // Delete provides a mock function with given fields: ctx, id
-func (_m *WarehouseRepo) Delete(ctx context.Context, id int32) error {
+func (_m *WarehouseRepo) Delete(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -78,7 +78,7 @@ func (_m *WarehouseRepo) Delete(ctx context.Context, id int32) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -94,14 +94,14 @@ type WarehouseRepo_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 func (_e *WarehouseRepo_Expecter) Delete(ctx interface{}, id interface{}) *WarehouseRepo_Delete_Call {
 	return &WarehouseRepo_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *WarehouseRepo_Delete_Call) Run(run func(ctx context.Context, id int32)) *WarehouseRepo_Delete_Call {
+func (_c *WarehouseRepo_Delete_Call) Run(run func(ctx context.Context, id int64)) *WarehouseRepo_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -111,13 +111,13 @@ func (_c *WarehouseRepo_Delete_Call) Return(_a0 error) *WarehouseRepo_Delete_Cal
 	return _c
 }
 
-func (_c *WarehouseRepo_Delete_Call) RunAndReturn(run func(context.Context, int32) error) *WarehouseRepo_Delete_Call {
+func (_c *WarehouseRepo_Delete_Call) RunAndReturn(run func(context.Context, int64) error) *WarehouseRepo_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *WarehouseRepo) Get(ctx context.Context, id int32) (*model.Warehouse, error) {
+func (_m *WarehouseRepo) Get(ctx context.Context, id int64) (*model.Warehouse, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -126,10 +126,10 @@ func (_m *WarehouseRepo) Get(ctx context.Context, id int32) (*model.Warehouse, e
 
 	var r0 *model.Warehouse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) (*model.Warehouse, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Warehouse, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int32) *model.Warehouse); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Warehouse); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -137,7 +137,7 @@ func (_m *WarehouseRepo) Get(ctx context.Context, id int32) (*model.Warehouse, e
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -153,14 +153,14 @@ type WarehouseRepo_Get_Call struct {
 
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 func (_e *WarehouseRepo_Expecter) Get(ctx interface{}, id interface{}) *WarehouseRepo_Get_Call {
 	return &WarehouseRepo_Get_Call{Call: _e.mock.On("Get", ctx, id)}
 }
 
-func (_c *WarehouseRepo_Get_Call) Run(run func(ctx context.Context, id int32)) *WarehouseRepo_Get_Call {
+func (_c *WarehouseRepo_Get_Call) Run(run func(ctx context.Context, id int64)) *WarehouseRepo_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -170,7 +170,7 @@ func (_c *WarehouseRepo_Get_Call) Return(_a0 *model.Warehouse, _a1 error) *Wareh
 	return _c
 }
 
-func (_c *WarehouseRepo_Get_Call) RunAndReturn(run func(context.Context, int32) (*model.Warehouse, error)) *WarehouseRepo_Get_Call {
+func (_c *WarehouseRepo_Get_Call) RunAndReturn(run func(context.Context, int64) (*model.Warehouse, error)) *WarehouseRepo_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }

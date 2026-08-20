@@ -17,10 +17,10 @@ import (
 //go:generate mockery --name=WarehouseService --output=./mocks --outpkg=mocks --with-expecter=true
 type WarehouseService interface {
 	Create(ctx context.Context, name string, location string) (*model.Warehouse, error)
-	Get(ctx context.Context, id int32) (*model.Warehouse, error)
+	Get(ctx context.Context, id int64) (*model.Warehouse, error)
 	List(ctx context.Context) ([]model.Warehouse, error)
-	Update(ctx context.Context, id int32, name string, location string) error
-	Delete(ctx context.Context, id int32) error
+	Update(ctx context.Context, id int64, name string, location string) error
+	Delete(ctx context.Context, id int64) error
 }
 
 type WarehouseHandler struct {
@@ -71,7 +71,7 @@ func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.get"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
@@ -80,7 +80,7 @@ func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	log = log.With(slog.Int("warehouse_id", int(warehouseID)))
 
-	warehouse, err := h.service.Get(r.Context(), int32(warehouseID))
+	warehouse, err := h.service.Get(r.Context(), int64(warehouseID))
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidWarehouseID):
@@ -127,7 +127,7 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.update"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
@@ -143,7 +143,7 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.Update(r.Context(), int32(warehouseID), req.Name, req.Location)
+	err = h.service.Update(r.Context(), int64(warehouseID), req.Name, req.Location)
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrEmptyWarehouseName), errors.Is(err, model.ErrEmptyWarehouseLocation):
@@ -165,7 +165,7 @@ func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	const op = "rest.warehouse.delete"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
-	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 32)
+	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		log.Warn("parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
@@ -174,7 +174,7 @@ func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	log = log.With(slog.Int("warehouse_id", int(warehouseID)))
 
-	err = h.service.Delete(r.Context(), int32(warehouseID))
+	err = h.service.Delete(r.Context(), int64(warehouseID))
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidWarehouseID):

@@ -9,16 +9,16 @@ import (
 )
 
 type Product struct {
-	ID          int32
-	WarehouseID int32
+	ID          int64
+	WarehouseID int64
 	Name        string
-	Quantity    int32
+	Quantity    int64
 	CreatedAt   time.Time
-	Reserved    int32
+	Reserved    int64
 }
 
 type Warehouse struct {
-	ID        int32
+	ID        int64
 	Name      string
 	Location  string
 	CreatedAt time.Time

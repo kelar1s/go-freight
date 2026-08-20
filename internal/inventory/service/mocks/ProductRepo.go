@@ -23,7 +23,7 @@ func (_m *ProductRepo) EXPECT() *ProductRepo_Expecter {
 }
 
 // AddQuantity provides a mock function with given fields: ctx, id, quantity
-func (_m *ProductRepo) AddQuantity(ctx context.Context, id int32, quantity int32) error {
+func (_m *ProductRepo) AddQuantity(ctx context.Context, id int64, quantity int64) error {
 	ret := _m.Called(ctx, id, quantity)
 
 	if len(ret) == 0 {
@@ -31,7 +31,7 @@ func (_m *ProductRepo) AddQuantity(ctx context.Context, id int32, quantity int32
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
 		r0 = rf(ctx, id, quantity)
 	} else {
 		r0 = ret.Error(0)
@@ -47,15 +47,15 @@ type ProductRepo_AddQuantity_Call struct {
 
 // AddQuantity is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
-//   - quantity int32
+//   - id int64
+//   - quantity int64
 func (_e *ProductRepo_Expecter) AddQuantity(ctx interface{}, id interface{}, quantity interface{}) *ProductRepo_AddQuantity_Call {
 	return &ProductRepo_AddQuantity_Call{Call: _e.mock.On("AddQuantity", ctx, id, quantity)}
 }
 
-func (_c *ProductRepo_AddQuantity_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *ProductRepo_AddQuantity_Call {
+func (_c *ProductRepo_AddQuantity_Call) Run(run func(ctx context.Context, id int64, quantity int64)) *ProductRepo_AddQuantity_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
@@ -65,13 +65,13 @@ func (_c *ProductRepo_AddQuantity_Call) Return(_a0 error) *ProductRepo_AddQuanti
 	return _c
 }
 
-func (_c *ProductRepo_AddQuantity_Call) RunAndReturn(run func(context.Context, int32, int32) error) *ProductRepo_AddQuantity_Call {
+func (_c *ProductRepo_AddQuantity_Call) RunAndReturn(run func(context.Context, int64, int64) error) *ProductRepo_AddQuantity_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CancelReservation provides a mock function with given fields: ctx, id, quantity
-func (_m *ProductRepo) CancelReservation(ctx context.Context, id int32, quantity int32) error {
+func (_m *ProductRepo) CancelReservation(ctx context.Context, id int64, quantity int64) error {
 	ret := _m.Called(ctx, id, quantity)
 
 	if len(ret) == 0 {
@@ -79,7 +79,7 @@ func (_m *ProductRepo) CancelReservation(ctx context.Context, id int32, quantity
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
 		r0 = rf(ctx, id, quantity)
 	} else {
 		r0 = ret.Error(0)
@@ -95,15 +95,15 @@ type ProductRepo_CancelReservation_Call struct {
 
 // CancelReservation is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
-//   - quantity int32
+//   - id int64
+//   - quantity int64
 func (_e *ProductRepo_Expecter) CancelReservation(ctx interface{}, id interface{}, quantity interface{}) *ProductRepo_CancelReservation_Call {
 	return &ProductRepo_CancelReservation_Call{Call: _e.mock.On("CancelReservation", ctx, id, quantity)}
 }
 
-func (_c *ProductRepo_CancelReservation_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *ProductRepo_CancelReservation_Call {
+func (_c *ProductRepo_CancelReservation_Call) Run(run func(ctx context.Context, id int64, quantity int64)) *ProductRepo_CancelReservation_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
@@ -113,7 +113,7 @@ func (_c *ProductRepo_CancelReservation_Call) Return(_a0 error) *ProductRepo_Can
 	return _c
 }
 
-func (_c *ProductRepo_CancelReservation_Call) RunAndReturn(run func(context.Context, int32, int32) error) *ProductRepo_CancelReservation_Call {
+func (_c *ProductRepo_CancelReservation_Call) RunAndReturn(run func(context.Context, int64, int64) error) *ProductRepo_CancelReservation_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -166,7 +166,7 @@ func (_c *ProductRepo_Create_Call) RunAndReturn(run func(context.Context, *model
 }
 
 // Delete provides a mock function with given fields: ctx, id
-func (_m *ProductRepo) Delete(ctx context.Context, id int32) error {
+func (_m *ProductRepo) Delete(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -174,7 +174,7 @@ func (_m *ProductRepo) Delete(ctx context.Context, id int32) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -190,14 +190,14 @@ type ProductRepo_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 func (_e *ProductRepo_Expecter) Delete(ctx interface{}, id interface{}) *ProductRepo_Delete_Call {
 	return &ProductRepo_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *ProductRepo_Delete_Call) Run(run func(ctx context.Context, id int32)) *ProductRepo_Delete_Call {
+func (_c *ProductRepo_Delete_Call) Run(run func(ctx context.Context, id int64)) *ProductRepo_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -207,13 +207,13 @@ func (_c *ProductRepo_Delete_Call) Return(_a0 error) *ProductRepo_Delete_Call {
 	return _c
 }
 
-func (_c *ProductRepo_Delete_Call) RunAndReturn(run func(context.Context, int32) error) *ProductRepo_Delete_Call {
+func (_c *ProductRepo_Delete_Call) RunAndReturn(run func(context.Context, int64) error) *ProductRepo_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *ProductRepo) Get(ctx context.Context, id int32) (*model.Product, error) {
+func (_m *ProductRepo) Get(ctx context.Context, id int64) (*model.Product, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -222,10 +222,10 @@ func (_m *ProductRepo) Get(ctx context.Context, id int32) (*model.Product, error
 
 	var r0 *model.Product
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) (*model.Product, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Product, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int32) *model.Product); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Product); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -233,7 +233,7 @@ func (_m *ProductRepo) Get(ctx context.Context, id int32) (*model.Product, error
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -249,14 +249,14 @@ type ProductRepo_Get_Call struct {
 
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
+//   - id int64
 func (_e *ProductRepo_Expecter) Get(ctx interface{}, id interface{}) *ProductRepo_Get_Call {
 	return &ProductRepo_Get_Call{Call: _e.mock.On("Get", ctx, id)}
 }
 
-func (_c *ProductRepo_Get_Call) Run(run func(ctx context.Context, id int32)) *ProductRepo_Get_Call {
+func (_c *ProductRepo_Get_Call) Run(run func(ctx context.Context, id int64)) *ProductRepo_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -266,13 +266,13 @@ func (_c *ProductRepo_Get_Call) Return(_a0 *model.Product, _a1 error) *ProductRe
 	return _c
 }
 
-func (_c *ProductRepo_Get_Call) RunAndReturn(run func(context.Context, int32) (*model.Product, error)) *ProductRepo_Get_Call {
+func (_c *ProductRepo_Get_Call) RunAndReturn(run func(context.Context, int64) (*model.Product, error)) *ProductRepo_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // ListByWarehouse provides a mock function with given fields: ctx, warehouseID
-func (_m *ProductRepo) ListByWarehouse(ctx context.Context, warehouseID int32) ([]model.Product, error) {
+func (_m *ProductRepo) ListByWarehouse(ctx context.Context, warehouseID int64) ([]model.Product, error) {
 	ret := _m.Called(ctx, warehouseID)
 
 	if len(ret) == 0 {
@@ -281,10 +281,10 @@ func (_m *ProductRepo) ListByWarehouse(ctx context.Context, warehouseID int32) (
 
 	var r0 []model.Product
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32) ([]model.Product, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) ([]model.Product, error)); ok {
 		return rf(ctx, warehouseID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int32) []model.Product); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) []model.Product); ok {
 		r0 = rf(ctx, warehouseID)
 	} else {
 		if ret.Get(0) != nil {
@@ -292,7 +292,7 @@ func (_m *ProductRepo) ListByWarehouse(ctx context.Context, warehouseID int32) (
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int32) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, warehouseID)
 	} else {
 		r1 = ret.Error(1)
@@ -308,14 +308,14 @@ type ProductRepo_ListByWarehouse_Call struct {
 
 // ListByWarehouse is a helper method to define mock.On call
 //   - ctx context.Context
-//   - warehouseID int32
+//   - warehouseID int64
 func (_e *ProductRepo_Expecter) ListByWarehouse(ctx interface{}, warehouseID interface{}) *ProductRepo_ListByWarehouse_Call {
 	return &ProductRepo_ListByWarehouse_Call{Call: _e.mock.On("ListByWarehouse", ctx, warehouseID)}
 }
 
-func (_c *ProductRepo_ListByWarehouse_Call) Run(run func(ctx context.Context, warehouseID int32)) *ProductRepo_ListByWarehouse_Call {
+func (_c *ProductRepo_ListByWarehouse_Call) Run(run func(ctx context.Context, warehouseID int64)) *ProductRepo_ListByWarehouse_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -325,13 +325,13 @@ func (_c *ProductRepo_ListByWarehouse_Call) Return(_a0 []model.Product, _a1 erro
 	return _c
 }
 
-func (_c *ProductRepo_ListByWarehouse_Call) RunAndReturn(run func(context.Context, int32) ([]model.Product, error)) *ProductRepo_ListByWarehouse_Call {
+func (_c *ProductRepo_ListByWarehouse_Call) RunAndReturn(run func(context.Context, int64) ([]model.Product, error)) *ProductRepo_ListByWarehouse_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Release provides a mock function with given fields: ctx, id, quantity
-func (_m *ProductRepo) Release(ctx context.Context, id int32, quantity int32) error {
+func (_m *ProductRepo) Release(ctx context.Context, id int64, quantity int64) error {
 	ret := _m.Called(ctx, id, quantity)
 
 	if len(ret) == 0 {
@@ -339,7 +339,7 @@ func (_m *ProductRepo) Release(ctx context.Context, id int32, quantity int32) er
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
 		r0 = rf(ctx, id, quantity)
 	} else {
 		r0 = ret.Error(0)
@@ -355,15 +355,15 @@ type ProductRepo_Release_Call struct {
 
 // Release is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
-//   - quantity int32
+//   - id int64
+//   - quantity int64
 func (_e *ProductRepo_Expecter) Release(ctx interface{}, id interface{}, quantity interface{}) *ProductRepo_Release_Call {
 	return &ProductRepo_Release_Call{Call: _e.mock.On("Release", ctx, id, quantity)}
 }
 
-func (_c *ProductRepo_Release_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *ProductRepo_Release_Call {
+func (_c *ProductRepo_Release_Call) Run(run func(ctx context.Context, id int64, quantity int64)) *ProductRepo_Release_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
@@ -373,13 +373,13 @@ func (_c *ProductRepo_Release_Call) Return(_a0 error) *ProductRepo_Release_Call 
 	return _c
 }
 
-func (_c *ProductRepo_Release_Call) RunAndReturn(run func(context.Context, int32, int32) error) *ProductRepo_Release_Call {
+func (_c *ProductRepo_Release_Call) RunAndReturn(run func(context.Context, int64, int64) error) *ProductRepo_Release_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Reserve provides a mock function with given fields: ctx, id, quantity
-func (_m *ProductRepo) Reserve(ctx context.Context, id int32, quantity int32) error {
+func (_m *ProductRepo) Reserve(ctx context.Context, id int64, quantity int64) error {
 	ret := _m.Called(ctx, id, quantity)
 
 	if len(ret) == 0 {
@@ -387,7 +387,7 @@ func (_m *ProductRepo) Reserve(ctx context.Context, id int32, quantity int32) er
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
 		r0 = rf(ctx, id, quantity)
 	} else {
 		r0 = ret.Error(0)
@@ -403,15 +403,15 @@ type ProductRepo_Reserve_Call struct {
 
 // Reserve is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id int32
-//   - quantity int32
+//   - id int64
+//   - quantity int64
 func (_e *ProductRepo_Expecter) Reserve(ctx interface{}, id interface{}, quantity interface{}) *ProductRepo_Reserve_Call {
 	return &ProductRepo_Reserve_Call{Call: _e.mock.On("Reserve", ctx, id, quantity)}
 }
 
-func (_c *ProductRepo_Reserve_Call) Run(run func(ctx context.Context, id int32, quantity int32)) *ProductRepo_Reserve_Call {
+func (_c *ProductRepo_Reserve_Call) Run(run func(ctx context.Context, id int64, quantity int64)) *ProductRepo_Reserve_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64))
 	})
 	return _c
 }
@@ -421,7 +421,7 @@ func (_c *ProductRepo_Reserve_Call) Return(_a0 error) *ProductRepo_Reserve_Call 
 	return _c
 }
 
-func (_c *ProductRepo_Reserve_Call) RunAndReturn(run func(context.Context, int32, int32) error) *ProductRepo_Reserve_Call {
+func (_c *ProductRepo_Reserve_Call) RunAndReturn(run func(context.Context, int64, int64) error) *ProductRepo_Reserve_Call {
 	_c.Call.Return(run)
 	return _c
 }

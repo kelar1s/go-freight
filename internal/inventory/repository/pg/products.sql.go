@@ -14,13 +14,13 @@ UPDATE products SET quantity = quantity + $2 WHERE id = $1 AND (quantity + $2) >
 `
 
 type AddProductQuantityParams struct {
-	ID       int32
-	Quantity int32
+	ID       int64
+	Quantity int64
 }
 
-func (q *Queries) AddProductQuantity(ctx context.Context, arg AddProductQuantityParams) (int32, error) {
+func (q *Queries) AddProductQuantity(ctx context.Context, arg AddProductQuantityParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, addProductQuantity, arg.ID, arg.Quantity)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -30,13 +30,13 @@ UPDATE products SET reserved = reserved - $2 WHERE id = $1 AND reserved >= $2 RE
 `
 
 type CancelReservationParams struct {
-	ID       int32
-	Reserved int32
+	ID       int64
+	Reserved int64
 }
 
-func (q *Queries) CancelReservation(ctx context.Context, arg CancelReservationParams) (int32, error) {
+func (q *Queries) CancelReservation(ctx context.Context, arg CancelReservationParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, cancelReservation, arg.ID, arg.Reserved)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -46,9 +46,9 @@ INSERT INTO products(warehouse_id, name, quantity, reserved) VALUES($1, $2, $3, 
 `
 
 type CreateProductParams struct {
-	WarehouseID int32
+	WarehouseID int64
 	Name        string
-	Quantity    int32
+	Quantity    int64
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
@@ -69,9 +69,9 @@ const deleteProduct = `-- name: DeleteProduct :one
 DELETE FROM products WHERE id = $1 RETURNING id
 `
 
-func (q *Queries) DeleteProduct(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) DeleteProduct(ctx context.Context, id int64) (int64, error) {
 	row := q.db.QueryRowContext(ctx, deleteProduct, id)
-	var id_2 int32
+	var id_2 int64
 	err := row.Scan(&id_2)
 	return id_2, err
 }
@@ -80,7 +80,7 @@ const getProduct = `-- name: GetProduct :one
 SELECT id, warehouse_id, name, quantity, created_at, reserved FROM products WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
+func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
 	row := q.db.QueryRowContext(ctx, getProduct, id)
 	var i Product
 	err := row.Scan(
@@ -98,7 +98,7 @@ const listProductsByWarehouse = `-- name: ListProductsByWarehouse :many
 SELECT id, warehouse_id, name, quantity, created_at, reserved FROM products WHERE warehouse_id = $1 ORDER BY id
 `
 
-func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int32) ([]Product, error) {
+func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int64) ([]Product, error) {
 	rows, err := q.db.QueryContext(ctx, listProductsByWarehouse, warehouseID)
 	if err != nil {
 		return nil, err
@@ -133,13 +133,13 @@ UPDATE products SET quantity = quantity - $2, reserved = reserved - $2 WHERE id 
 `
 
 type ReleaseProductParams struct {
-	ID       int32
-	Quantity int32
+	ID       int64
+	Quantity int64
 }
 
-func (q *Queries) ReleaseProduct(ctx context.Context, arg ReleaseProductParams) (int32, error) {
+func (q *Queries) ReleaseProduct(ctx context.Context, arg ReleaseProductParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, releaseProduct, arg.ID, arg.Quantity)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -149,13 +149,13 @@ UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND (quantity - reser
 `
 
 type ReserveProductParams struct {
-	ID       int32
-	Reserved int32
+	ID       int64
+	Reserved int64
 }
 
-func (q *Queries) ReserveProduct(ctx context.Context, arg ReserveProductParams) (int32, error) {
+func (q *Queries) ReserveProduct(ctx context.Context, arg ReserveProductParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, reserveProduct, arg.ID, arg.Reserved)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }

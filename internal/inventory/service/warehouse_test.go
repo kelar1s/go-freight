@@ -92,7 +92,7 @@ func TestWarehouseService_Create(t *testing.T) {
 func TestWarehouseService_Get(t *testing.T) {
 	type TestCase struct {
 		name           string
-		inputID        int32
+		inputID        int64
 		mockSetup      func(r *mocks.WarehouseRepo)
 		expectedResult *model.Warehouse
 		expectedError  error
@@ -103,7 +103,7 @@ func TestWarehouseService_Get(t *testing.T) {
 			name:    "Success",
 			inputID: 1,
 			mockSetup: func(r *mocks.WarehouseRepo) {
-				r.EXPECT().Get(mock.Anything, int32(1)).Return(&model.Warehouse{ID: 1, Name: "Main"}, nil).Once()
+				r.EXPECT().Get(mock.Anything, int64(1)).Return(&model.Warehouse{ID: 1, Name: "Main"}, nil).Once()
 			},
 			expectedResult: &model.Warehouse{ID: 1, Name: "Main"},
 			expectedError:  nil,
@@ -119,7 +119,7 @@ func TestWarehouseService_Get(t *testing.T) {
 			name:    "Error - Repo Failure",
 			inputID: 1,
 			mockSetup: func(r *mocks.WarehouseRepo) {
-				r.EXPECT().Get(mock.Anything, int32(1)).Return(nil, errRepoExplosion).Once()
+				r.EXPECT().Get(mock.Anything, int64(1)).Return(nil, errRepoExplosion).Once()
 			},
 			expectedResult: nil,
 			expectedError:  errRepoExplosion,
@@ -185,7 +185,7 @@ func TestWarehouseService_List(t *testing.T) {
 func TestWarehouseService_Update(t *testing.T) {
 	type TestCase struct {
 		name          string
-		inputID       int32
+		inputID       int64
 		inputName     string
 		inputLocation string
 		mockSetup     func(r *mocks.WarehouseRepo)
@@ -230,7 +230,7 @@ func TestWarehouseService_Update(t *testing.T) {
 func TestWarehouseService_Delete(t *testing.T) {
 	type TestCase struct {
 		name          string
-		inputID       int32
+		inputID       int64
 		mockSetup     func(r *mocks.WarehouseRepo)
 		expectedError error
 	}
@@ -239,7 +239,7 @@ func TestWarehouseService_Delete(t *testing.T) {
 		{
 			name:          "Success",
 			inputID:       1,
-			mockSetup:     func(r *mocks.WarehouseRepo) { r.EXPECT().Delete(mock.Anything, int32(1)).Return(nil).Once() },
+			mockSetup:     func(r *mocks.WarehouseRepo) { r.EXPECT().Delete(mock.Anything, int64(1)).Return(nil).Once() },
 			expectedError: nil,
 		},
 		{

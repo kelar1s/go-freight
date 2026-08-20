@@ -38,7 +38,7 @@ func (r *ProductRepo) Create(ctx context.Context, product *model.Product) error 
 	return nil
 }
 
-func (r *ProductRepo) Get(ctx context.Context, id int32) (*model.Product, error) {
+func (r *ProductRepo) Get(ctx context.Context, id int64) (*model.Product, error) {
 	const op = "inventory.repository.product.get"
 
 	pgProduct, err := r.db.GetProduct(ctx, id)
@@ -59,7 +59,7 @@ func (r *ProductRepo) Get(ctx context.Context, id int32) (*model.Product, error)
 	}, nil
 }
 
-func (r *ProductRepo) Delete(ctx context.Context, id int32) error {
+func (r *ProductRepo) Delete(ctx context.Context, id int64) error {
 	const op = "inventory.repository.product.delete"
 
 	_, err := r.db.DeleteProduct(ctx, id)
@@ -72,7 +72,7 @@ func (r *ProductRepo) Delete(ctx context.Context, id int32) error {
 	return nil
 }
 
-func (r *ProductRepo) ListByWarehouse(ctx context.Context, id int32) ([]model.Product, error) {
+func (r *ProductRepo) ListByWarehouse(ctx context.Context, id int64) ([]model.Product, error) {
 	const op = "inventory.repository.product.list_by_warehouse"
 
 	pgListProducts, err := r.db.ListProductsByWarehouse(ctx, id)
@@ -93,7 +93,7 @@ func (r *ProductRepo) ListByWarehouse(ctx context.Context, id int32) ([]model.Pr
 	return listProducts, nil
 }
 
-func (r *ProductRepo) AddQuantity(ctx context.Context, id int32, quantity int32) error {
+func (r *ProductRepo) AddQuantity(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.repository.product.add_quantity"
 
 	_, err := r.db.AddProductQuantity(ctx, pg.AddProductQuantityParams{
@@ -103,7 +103,7 @@ func (r *ProductRepo) AddQuantity(ctx context.Context, id int32, quantity int32)
 	return handleStockError(op, err)
 }
 
-func (r *ProductRepo) Reserve(ctx context.Context, id int32, quantity int32) error {
+func (r *ProductRepo) Reserve(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.repository.product.reserve"
 
 	_, err := r.db.ReserveProduct(ctx, pg.ReserveProductParams{
@@ -113,7 +113,7 @@ func (r *ProductRepo) Reserve(ctx context.Context, id int32, quantity int32) err
 	return handleStockError(op, err)
 }
 
-func (r *ProductRepo) Release(ctx context.Context, id int32, quantity int32) error {
+func (r *ProductRepo) Release(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.repository.product.release"
 
 	_, err := r.db.ReleaseProduct(ctx, pg.ReleaseProductParams{
@@ -123,7 +123,7 @@ func (r *ProductRepo) Release(ctx context.Context, id int32, quantity int32) err
 	return handleStockError(op, err)
 }
 
-func (r *ProductRepo) CancelReservation(ctx context.Context, id int32, quantity int32) error {
+func (r *ProductRepo) CancelReservation(ctx context.Context, id int64, quantity int64) error {
 	const op = "inventory.repository.product.cancel_reservation"
 
 	_, err := r.db.CancelReservation(ctx, pg.CancelReservationParams{

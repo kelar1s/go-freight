@@ -11,10 +11,10 @@ import (
 //go:generate mockery --name=WarehouseRepo --output=./mocks --outpkg=mocks --with-expecter=true
 type WarehouseRepo interface {
 	Create(ctx context.Context, warehouse *model.Warehouse) error
-	Get(ctx context.Context, id int32) (*model.Warehouse, error)
+	Get(ctx context.Context, id int64) (*model.Warehouse, error)
 	List(ctx context.Context) ([]model.Warehouse, error)
 	Update(ctx context.Context, warehouse *model.Warehouse) error
-	Delete(ctx context.Context, id int32) error
+	Delete(ctx context.Context, id int64) error
 }
 
 type WarehouseService struct {
@@ -48,7 +48,7 @@ func (s *WarehouseService) Create(ctx context.Context, name string, location str
 	return warehouse, nil
 }
 
-func (s *WarehouseService) Get(ctx context.Context, id int32) (*model.Warehouse, error) {
+func (s *WarehouseService) Get(ctx context.Context, id int64) (*model.Warehouse, error) {
 	const op = "inventory.service.warehouse.get"
 
 	if id <= 0 {
@@ -71,7 +71,7 @@ func (s *WarehouseService) List(ctx context.Context) ([]model.Warehouse, error) 
 	return warehouses, nil
 }
 
-func (s *WarehouseService) Update(ctx context.Context, id int32, name, location string) error {
+func (s *WarehouseService) Update(ctx context.Context, id int64, name, location string) error {
 	const op = "inventory.service.warehouse.update"
 
 	if id <= 0 {
@@ -97,7 +97,7 @@ func (s *WarehouseService) Update(ctx context.Context, id int32, name, location 
 	return nil
 }
 
-func (s *WarehouseService) Delete(ctx context.Context, id int32) error {
+func (s *WarehouseService) Delete(ctx context.Context, id int64) error {
 	const op = "inventory.service.warehouse.delete"
 
 	if id <= 0 {

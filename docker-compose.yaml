@@ -1,21 +1,22 @@
+name: go-freight
+
 services:
-  app:
+  inventory:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: gofreight_api
-    restart: always
+    container_name: gofreight_inventory
+    restart: unless-stopped
     ports:
       - "8080:8080"
     env_file:
       - .env
     environment:
-      - CONFIG_PATH=/config/local.yaml
+      - CONFIG_PATH=/app/config/local.yaml
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_NAME=gofreight
-      - HTTP_SERVER_ADDRESS=0.0.0.0:8080
     depends_on:
       db:
         condition: service_healthy
@@ -23,7 +24,7 @@ services:
   db:
     image: postgres:15-alpine
     container_name: gofreight_db
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}

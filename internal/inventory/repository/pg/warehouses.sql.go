@@ -34,9 +34,9 @@ const deleteWarehouse = `-- name: DeleteWarehouse :one
 DELETE FROM warehouses WHERE id = $1 RETURNING id
 `
 
-func (q *Queries) DeleteWarehouse(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) DeleteWarehouse(ctx context.Context, id int64) (int64, error) {
 	row := q.db.QueryRowContext(ctx, deleteWarehouse, id)
-	var id_2 int32
+	var id_2 int64
 	err := row.Scan(&id_2)
 	return id_2, err
 }
@@ -45,7 +45,7 @@ const getWarehouse = `-- name: GetWarehouse :one
 SELECT id, name, location, created_at FROM warehouses WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetWarehouse(ctx context.Context, id int32) (Warehouse, error) {
+func (q *Queries) GetWarehouse(ctx context.Context, id int64) (Warehouse, error) {
 	row := q.db.QueryRowContext(ctx, getWarehouse, id)
 	var i Warehouse
 	err := row.Scan(
@@ -94,14 +94,14 @@ UPDATE warehouses SET name = $2, location = $3 WHERE id = $1 RETURNING id
 `
 
 type UpdateWarehouseParams struct {
-	ID       int32
+	ID       int64
 	Name     string
 	Location string
 }
 
-func (q *Queries) UpdateWarehouse(ctx context.Context, arg UpdateWarehouseParams) (int32, error) {
+func (q *Queries) UpdateWarehouse(ctx context.Context, arg UpdateWarehouseParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, updateWarehouse, arg.ID, arg.Name, arg.Location)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
