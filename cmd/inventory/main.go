@@ -6,7 +6,6 @@ import (
 
 	"github.com/kelar1s/go-freight/internal/inventory/app"
 	"github.com/kelar1s/go-freight/internal/pkg/logger"
-	_ "github.com/lib/pq"
 )
 
 func main() {
