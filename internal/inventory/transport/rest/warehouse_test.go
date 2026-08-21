@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -18,8 +17,6 @@ import (
 	"github.com/kelar1s/go-freight/internal/inventory/transport/rest"
 	"github.com/kelar1s/go-freight/internal/inventory/transport/rest/mocks"
 )
-
-var mockTime = time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)
 
 func TestWarehouseHandler_Create(t *testing.T) {
 	tests := []struct {

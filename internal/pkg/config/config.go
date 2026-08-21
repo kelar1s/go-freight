@@ -14,6 +14,7 @@ type Config struct {
 	Env        string     `yaml:"env" env-default:"local"`
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Database   Database   `yaml:"database"`
+	Redis      Redis      `yaml:"redis"`
 }
 
 type HTTPServer struct {
@@ -31,10 +32,25 @@ type Database struct {
 	SSLMode  string `yaml:"ssl_mode" env:"DB_SSLMODE" env-default:"disable"`
 }
 
+type Redis struct {
+	Host         string        `yaml:"host" env:"REDIS_HOST" env-default:"localhost"`
+	Port         int           `yaml:"port" env:"REDIS_PORT" env-default:"6379"`
+	Password     string        `yaml:"password" env:"REDIS_PASSWORD" env-default:""`
+	DB           int           `yaml:"db" env:"REDIS_DB" env-default:"0"`
+	TTL          time.Duration `yaml:"ttl" env:"REDIS_TTL" env-default:"5m"`
+	DialTimeout  time.Duration `yaml:"dial_timeout" env-default:"1s"`
+	ReadTimeout  time.Duration `yaml:"read_timeout" env-default:"200ms"`
+	WriteTimeout time.Duration `yaml:"write_timeout" env-default:"200ms"`
+}
+
 func (d Database) DSN() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		d.Host, d.Port, d.User, d.Password, d.DBName, d.SSLMode,
 	)
+}
+
+func (r Redis) Address() string {
+	return fmt.Sprintf("%s:%d", r.Host, r.Port)
 }
 
 func MustLoad() *Config {

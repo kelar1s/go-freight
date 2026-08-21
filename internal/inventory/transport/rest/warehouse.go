@@ -194,6 +194,9 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, model.ErrWarehouseNotFound):
 			log.Warn("warehouse not found")
 			WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, model.ErrInvalidWarehouseID):
+			log.Warn("invalid warehouse id", slog.String("error", err.Error()))
+			WriteError(w, http.StatusBadRequest, err.Error())
 		default:
 			log.Error("update warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")

@@ -12,3 +12,13 @@ database:
   password: "${DB_PASSWORD}"
   db_name: "gofreight"
   ssl_mode: "disable"
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: "${REDIS_PASSWORD}"
+  db: 0
+  ttl: "5m"
+  dial_timeout: "1s"
+  read_timeout: "200ms"
+  write_timeout: "200ms"

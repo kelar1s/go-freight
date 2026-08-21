@@ -47,7 +47,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Невалидные данные (например, пустое имя)",
+                        "description": "Невалидный JSON или бизнес-ошибки (пустое имя, отрицательное количество и т.д.)",
                         "schema": {
                             "$ref": "#/definitions/github_com_kelar1s_go-freight_internal_inventory_transport_rest_dto.ErrorResponse"
                         }

@@ -46,7 +46,7 @@ func NewProductHandler(service ProductService, log *slog.Logger) *ProductHandler
 // @Produce      json
 // @Param        input body dto.CreateProductRequest true "Данные товара"
 // @Success      201  {object} dto.ProductResponse
-// @Failure      400  {object} dto.ErrorResponse "Невалидные данные (например, пустое имя)"
+// @Failure      400  {object} dto.ErrorResponse "Невалидный JSON или бизнес-ошибки (пустое имя, отрицательное количество и т.д.)"
 // @Failure      500  {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /products [post]
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +228,7 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure      500   {object} dto.ErrorResponse
 // @Router       /products/{id}/adjust [patch]
 func (h *ProductHandler) AdjustQuantity(w http.ResponseWriter, r *http.Request) {
-	const op = "rest.product.add_quantity"
+	const op = "rest.product.adjust_quantity"
 	log := logger.FromContext(r.Context(), h.log).With(slog.String("op", op))
 
 	productID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)

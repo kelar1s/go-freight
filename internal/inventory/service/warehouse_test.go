@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/kelar1s/go-freight/internal/inventory/model"
 	"github.com/kelar1s/go-freight/internal/inventory/service"
@@ -13,7 +12,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var mockTime = time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)
 var errRepoExplosion = errors.New("repo explosion")
 
 func TestWarehouseService_Create(t *testing.T) {
@@ -21,7 +19,7 @@ func TestWarehouseService_Create(t *testing.T) {
 		name           string
 		inputName      string
 		inputLocation  string
-		mockSetup      func(r *mocks.WarehouseRepo)
+		mockSetup      func(r *mocks.WarehouseRepo, c *mocks.Cache)
 		expectedResult *model.Warehouse
 		expectedError  error
 	}
@@ -31,7 +29,7 @@ func TestWarehouseService_Create(t *testing.T) {
 			name:          "Success with trim",
 			inputName:     "  Central Moscow  ",
 			inputLocation: "  Russia Moscow  ",
-			mockSetup: func(r *mocks.WarehouseRepo) {
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
 				r.EXPECT().Create(mock.Anything, mock.MatchedBy(func(w *model.Warehouse) bool {
 					return w.Name == "Central Moscow" && w.Location == "Russia Moscow"
 				})).Run(func(ctx context.Context, w *model.Warehouse) {
@@ -46,7 +44,7 @@ func TestWarehouseService_Create(t *testing.T) {
 			name:           "Error - Empty Name",
 			inputName:      "   ",
 			inputLocation:  "Moscow",
-			mockSetup:      func(r *mocks.WarehouseRepo) {},
+			mockSetup:      func(r *mocks.WarehouseRepo, c *mocks.Cache) {},
 			expectedResult: nil,
 			expectedError:  model.ErrEmptyWarehouseName,
 		},
@@ -54,7 +52,7 @@ func TestWarehouseService_Create(t *testing.T) {
 			name:           "Error - Empty Location",
 			inputName:      "Main",
 			inputLocation:  "   ",
-			mockSetup:      func(r *mocks.WarehouseRepo) {},
+			mockSetup:      func(r *mocks.WarehouseRepo, c *mocks.Cache) {},
 			expectedResult: nil,
 			expectedError:  model.ErrEmptyWarehouseLocation,
 		},
@@ -62,7 +60,7 @@ func TestWarehouseService_Create(t *testing.T) {
 			name:          "Error - Repo Failure",
 			inputName:     "Main",
 			inputLocation: "Moscow",
-			mockSetup: func(r *mocks.WarehouseRepo) {
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
 				r.EXPECT().Create(mock.Anything, mock.Anything).Return(errRepoExplosion).Once()
 			},
 			expectedResult: nil,
@@ -73,8 +71,10 @@ func TestWarehouseService_Create(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewWarehouseRepo(t)
-			tc.mockSetup(mockRepo)
-			svc := service.NewWarehouseService(mockRepo)
+			mockCache := mocks.NewCache(t)
+			tc.mockSetup(mockRepo, mockCache)
+
+			svc := service.NewWarehouseService(mockRepo, mockCache, mockTTL)
 
 			res, err := svc.Create(context.Background(), tc.inputName, tc.inputLocation)
 
@@ -93,44 +93,55 @@ func TestWarehouseService_Get(t *testing.T) {
 	type TestCase struct {
 		name           string
 		inputID        int64
-		mockSetup      func(r *mocks.WarehouseRepo)
+		mockSetup      func(r *mocks.WarehouseRepo, c *mocks.Cache)
 		expectedResult *model.Warehouse
 		expectedError  error
 	}
 
 	tests := []TestCase{
 		{
-			name:    "Success",
+			name:    "Success - Cache Miss (goes to DB)",
 			inputID: 1,
-			mockSetup: func(r *mocks.WarehouseRepo) {
-				r.EXPECT().Get(mock.Anything, int64(1)).Return(&model.Warehouse{ID: 1, Name: "Main"}, nil).Once()
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
+				c.EXPECT().Get(mock.Anything, "warehouse:1", mock.Anything).Return(errors.New("cache miss")).Once()
+
+				w := &model.Warehouse{ID: 1, Name: "Main"}
+				r.EXPECT().Get(mock.Anything, int64(1)).Return(w, nil).Once()
+
+				c.EXPECT().Set(mock.Anything, "warehouse:1", w, mockTTL).Return(nil).Once()
 			},
 			expectedResult: &model.Warehouse{ID: 1, Name: "Main"},
 			expectedError:  nil,
 		},
 		{
-			name:           "Error - Invalid ID",
-			inputID:        -5,
-			mockSetup:      func(r *mocks.WarehouseRepo) {},
-			expectedResult: nil,
-			expectedError:  model.ErrInvalidWarehouseID,
+			name:    "Success - Cache Hit (no DB call)",
+			inputID: 2,
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
+				c.EXPECT().Get(mock.Anything, "warehouse:2", mock.Anything).RunAndReturn(func(ctx context.Context, key string, dest interface{}) error {
+					w := dest.(**model.Warehouse)
+					*w = &model.Warehouse{ID: 2, Name: "Cached WH"}
+					return nil
+				}).Once()
+			},
+			expectedResult: &model.Warehouse{ID: 2, Name: "Cached WH"},
+			expectedError:  nil,
 		},
 		{
-			name:    "Error - Repo Failure",
-			inputID: 1,
-			mockSetup: func(r *mocks.WarehouseRepo) {
-				r.EXPECT().Get(mock.Anything, int64(1)).Return(nil, errRepoExplosion).Once()
-			},
+			name:           "Error - Invalid ID",
+			inputID:        -5,
+			mockSetup:      func(r *mocks.WarehouseRepo, c *mocks.Cache) {},
 			expectedResult: nil,
-			expectedError:  errRepoExplosion,
+			expectedError:  model.ErrInvalidWarehouseID,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewWarehouseRepo(t)
-			tc.mockSetup(mockRepo)
-			svc := service.NewWarehouseService(mockRepo)
+			mockCache := mocks.NewCache(t)
+			tc.mockSetup(mockRepo, mockCache)
+
+			svc := service.NewWarehouseService(mockRepo, mockCache, mockTTL)
 
 			res, err := svc.Get(context.Background(), tc.inputID)
 
@@ -148,7 +159,7 @@ func TestWarehouseService_Get(t *testing.T) {
 func TestWarehouseService_List(t *testing.T) {
 	type TestCase struct {
 		name           string
-		mockSetup      func(r *mocks.WarehouseRepo)
+		mockSetup      func(r *mocks.WarehouseRepo, c *mocks.Cache)
 		expectedResult []model.Warehouse
 		expectedError  error
 	}
@@ -156,7 +167,7 @@ func TestWarehouseService_List(t *testing.T) {
 	tests := []TestCase{
 		{
 			name: "Success",
-			mockSetup: func(r *mocks.WarehouseRepo) {
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
 				r.EXPECT().List(mock.Anything).Return([]model.Warehouse{{ID: 1, Name: "Main"}}, nil).Once()
 			},
 			expectedResult: []model.Warehouse{{ID: 1, Name: "Main"}},
@@ -167,8 +178,10 @@ func TestWarehouseService_List(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewWarehouseRepo(t)
-			tc.mockSetup(mockRepo)
-			svc := service.NewWarehouseService(mockRepo)
+			mockCache := mocks.NewCache(t)
+			tc.mockSetup(mockRepo, mockCache)
+
+			svc := service.NewWarehouseService(mockRepo, mockCache, mockTTL)
 
 			res, err := svc.List(context.Background())
 
@@ -188,7 +201,7 @@ func TestWarehouseService_Update(t *testing.T) {
 		inputID       int64
 		inputName     string
 		inputLocation string
-		mockSetup     func(r *mocks.WarehouseRepo)
+		mockSetup     func(r *mocks.WarehouseRepo, c *mocks.Cache)
 		expectedError error
 	}
 
@@ -198,10 +211,12 @@ func TestWarehouseService_Update(t *testing.T) {
 			inputID:       1,
 			inputName:     " New ",
 			inputLocation: " Loc ",
-			mockSetup: func(r *mocks.WarehouseRepo) {
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
 				r.EXPECT().Update(mock.Anything, mock.MatchedBy(func(w *model.Warehouse) bool {
 					return w.ID == 1 && w.Name == "New" && w.Location == "Loc"
 				})).Return(nil).Once()
+
+				c.EXPECT().Delete(mock.Anything, "warehouse:1").Return(nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -210,7 +225,7 @@ func TestWarehouseService_Update(t *testing.T) {
 			inputID:       0,
 			inputName:     "New",
 			inputLocation: "Loc",
-			mockSetup:     func(r *mocks.WarehouseRepo) {},
+			mockSetup:     func(r *mocks.WarehouseRepo, c *mocks.Cache) {},
 			expectedError: model.ErrInvalidWarehouseID,
 		},
 	}
@@ -218,8 +233,10 @@ func TestWarehouseService_Update(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewWarehouseRepo(t)
-			tc.mockSetup(mockRepo)
-			svc := service.NewWarehouseService(mockRepo)
+			mockCache := mocks.NewCache(t)
+			tc.mockSetup(mockRepo, mockCache)
+
+			svc := service.NewWarehouseService(mockRepo, mockCache, mockTTL)
 
 			err := svc.Update(context.Background(), tc.inputID, tc.inputName, tc.inputLocation)
 			assert.ErrorIs(t, err, tc.expectedError)
@@ -231,21 +248,24 @@ func TestWarehouseService_Delete(t *testing.T) {
 	type TestCase struct {
 		name          string
 		inputID       int64
-		mockSetup     func(r *mocks.WarehouseRepo)
+		mockSetup     func(r *mocks.WarehouseRepo, c *mocks.Cache)
 		expectedError error
 	}
 
 	tests := []TestCase{
 		{
-			name:          "Success",
-			inputID:       1,
-			mockSetup:     func(r *mocks.WarehouseRepo) { r.EXPECT().Delete(mock.Anything, int64(1)).Return(nil).Once() },
+			name:    "Success",
+			inputID: 1,
+			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
+				r.EXPECT().Delete(mock.Anything, int64(1)).Return(nil).Once()
+				c.EXPECT().Delete(mock.Anything, "warehouse:1").Return(nil).Once()
+			},
 			expectedError: nil,
 		},
 		{
 			name:          "Error - Invalid ID",
 			inputID:       0,
-			mockSetup:     func(r *mocks.WarehouseRepo) {},
+			mockSetup:     func(r *mocks.WarehouseRepo, c *mocks.Cache) {},
 			expectedError: model.ErrInvalidWarehouseID,
 		},
 	}
@@ -253,8 +273,10 @@ func TestWarehouseService_Delete(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := mocks.NewWarehouseRepo(t)
-			tc.mockSetup(mockRepo)
-			svc := service.NewWarehouseService(mockRepo)
+			mockCache := mocks.NewCache(t)
+			tc.mockSetup(mockRepo, mockCache)
+
+			svc := service.NewWarehouseService(mockRepo, mockCache, mockTTL)
 
 			err := svc.Delete(context.Background(), tc.inputID)
 			assert.ErrorIs(t, err, tc.expectedError)

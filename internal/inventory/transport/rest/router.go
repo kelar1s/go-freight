@@ -24,30 +24,31 @@ func NewRouter(
 	r.Use(mwLogger.New(log))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
+	r.Use(middleware.RedirectSlashes)
 
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Route("/api/v1", func(r chi.Router) {
 
 		r.Route("/warehouses", func(r chi.Router) {
-			r.Post("/", warehouseHandler.Create)
-			r.Get("/", warehouseHandler.List)
+			r.Post("", warehouseHandler.Create)
+			r.Get("", warehouseHandler.List)
 
 			r.Route("/{id}", func(r chi.Router) {
-				r.Get("/", warehouseHandler.Get)
-				r.Put("/", warehouseHandler.Update)
-				r.Delete("/", warehouseHandler.Delete)
+				r.Get("", warehouseHandler.Get)
+				r.Put("", warehouseHandler.Update)
+				r.Delete("", warehouseHandler.Delete)
 
 				r.Get("/products", productHandler.ListByWarehouse)
 			})
 		})
 
 		r.Route("/products", func(r chi.Router) {
-			r.Post("/", productHandler.Create)
+			r.Post("", productHandler.Create)
 
 			r.Route("/{id}", func(r chi.Router) {
-				r.Get("/", productHandler.Get)
-				r.Delete("/", productHandler.Delete)
+				r.Get("", productHandler.Get)
+				r.Delete("", productHandler.Delete)
 
 				r.Patch("/adjust", productHandler.AdjustQuantity)
 				r.Patch("/reserve", productHandler.Reserve)

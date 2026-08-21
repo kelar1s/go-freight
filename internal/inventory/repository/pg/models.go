@@ -12,9 +12,13 @@ type Product struct {
 	ID          int64
 	WarehouseID int64
 	Name        string
-	Quantity    int64
 	CreatedAt   time.Time
-	Reserved    int64
+}
+
+type ProductStock struct {
+	ProductID int64
+	Quantity  int64
+	Reserved  int64
 }
 
 type Warehouse struct {

@@ -7,62 +7,82 @@ package pg
 
 import (
 	"context"
+	"time"
 )
 
 const adjustProductQuantity = `-- name: AdjustProductQuantity :one
-UPDATE products SET quantity = quantity + $2 WHERE id = $1 AND (quantity + $2) >= reserved RETURNING id
+UPDATE product_stocks 
+SET quantity = quantity + $2 
+WHERE product_id = $1 AND (quantity + $2) >= reserved 
+RETURNING product_id
 `
 
 type AdjustProductQuantityParams struct {
-	ID       int64
-	Quantity int64
+	ProductID int64
+	Quantity  int64
 }
 
 func (q *Queries) AdjustProductQuantity(ctx context.Context, arg AdjustProductQuantityParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, adjustProductQuantity, arg.ID, arg.Quantity)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	row := q.db.QueryRowContext(ctx, adjustProductQuantity, arg.ProductID, arg.Quantity)
+	var product_id int64
+	err := row.Scan(&product_id)
+	return product_id, err
 }
 
 const cancelReservation = `-- name: CancelReservation :one
-UPDATE products SET reserved = reserved - $2 WHERE id = $1 AND $2 > 0 AND reserved >= $2 RETURNING id
+UPDATE product_stocks 
+SET reserved = reserved - $2 
+WHERE product_id = $1 AND $2 > 0 AND reserved >= $2 
+RETURNING product_id
 `
 
 type CancelReservationParams struct {
-	ID       int64
-	Reserved int64
+	ProductID int64
+	Reserved  int64
 }
 
 func (q *Queries) CancelReservation(ctx context.Context, arg CancelReservationParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, cancelReservation, arg.ID, arg.Reserved)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	row := q.db.QueryRowContext(ctx, cancelReservation, arg.ProductID, arg.Reserved)
+	var product_id int64
+	err := row.Scan(&product_id)
+	return product_id, err
 }
 
-const createProduct = `-- name: CreateProduct :one
-INSERT INTO products(warehouse_id, name, quantity, reserved) VALUES($1, $2, $3, 0) RETURNING id, warehouse_id, name, quantity, created_at, reserved
+const createProductMeta = `-- name: CreateProductMeta :one
+INSERT INTO products(warehouse_id, name) 
+VALUES($1, $2) RETURNING id, warehouse_id, name, created_at
 `
 
-type CreateProductParams struct {
+type CreateProductMetaParams struct {
 	WarehouseID int64
 	Name        string
-	Quantity    int64
 }
 
-func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
-	row := q.db.QueryRowContext(ctx, createProduct, arg.WarehouseID, arg.Name, arg.Quantity)
+func (q *Queries) CreateProductMeta(ctx context.Context, arg CreateProductMetaParams) (Product, error) {
+	row := q.db.QueryRowContext(ctx, createProductMeta, arg.WarehouseID, arg.Name)
 	var i Product
 	err := row.Scan(
 		&i.ID,
 		&i.WarehouseID,
 		&i.Name,
-		&i.Quantity,
 		&i.CreatedAt,
-		&i.Reserved,
 	)
 	return i, err
+}
+
+const createProductStock = `-- name: CreateProductStock :exec
+INSERT INTO product_stocks(product_id, quantity) 
+VALUES($1, $2)
+`
+
+type CreateProductStockParams struct {
+	ProductID int64
+	Quantity  int64
+}
+
+func (q *Queries) CreateProductStock(ctx context.Context, arg CreateProductStockParams) error {
+	_, err := q.db.ExecContext(ctx, createProductStock, arg.ProductID, arg.Quantity)
+	return err
 }
 
 const deleteProduct = `-- name: DeleteProduct :one
@@ -76,43 +96,69 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) (int64, error) {
 	return id_2, err
 }
 
-const getProduct = `-- name: GetProduct :one
-SELECT id, warehouse_id, name, quantity, created_at, reserved FROM products WHERE id = $1 LIMIT 1
+const getProductMeta = `-- name: GetProductMeta :one
+SELECT id, warehouse_id, name, created_at 
+FROM products 
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
-	row := q.db.QueryRowContext(ctx, getProduct, id)
+func (q *Queries) GetProductMeta(ctx context.Context, id int64) (Product, error) {
+	row := q.db.QueryRowContext(ctx, getProductMeta, id)
 	var i Product
 	err := row.Scan(
 		&i.ID,
 		&i.WarehouseID,
 		&i.Name,
-		&i.Quantity,
 		&i.CreatedAt,
-		&i.Reserved,
 	)
 	return i, err
 }
 
-const listProductsByWarehouse = `-- name: ListProductsByWarehouse :many
-SELECT id, warehouse_id, name, quantity, created_at, reserved FROM products WHERE warehouse_id = $1 ORDER BY id
+const getProductStock = `-- name: GetProductStock :one
+SELECT product_id, quantity, reserved 
+FROM product_stocks 
+WHERE product_id = $1 LIMIT 1
 `
 
-func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int64) ([]Product, error) {
+func (q *Queries) GetProductStock(ctx context.Context, productID int64) (ProductStock, error) {
+	row := q.db.QueryRowContext(ctx, getProductStock, productID)
+	var i ProductStock
+	err := row.Scan(&i.ProductID, &i.Quantity, &i.Reserved)
+	return i, err
+}
+
+const listProductsByWarehouse = `-- name: ListProductsByWarehouse :many
+SELECT p.id, p.warehouse_id, p.name, p.created_at, s.quantity, s.reserved 
+FROM products p
+JOIN product_stocks s ON p.id = s.product_id
+WHERE p.warehouse_id = $1 
+ORDER BY p.id
+`
+
+type ListProductsByWarehouseRow struct {
+	ID          int64
+	WarehouseID int64
+	Name        string
+	CreatedAt   time.Time
+	Quantity    int64
+	Reserved    int64
+}
+
+func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int64) ([]ListProductsByWarehouseRow, error) {
 	rows, err := q.db.QueryContext(ctx, listProductsByWarehouse, warehouseID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []ListProductsByWarehouseRow
 	for rows.Next() {
-		var i Product
+		var i ListProductsByWarehouseRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.WarehouseID,
 			&i.Name,
-			&i.Quantity,
 			&i.CreatedAt,
+			&i.Quantity,
 			&i.Reserved,
 		); err != nil {
 			return nil, err
@@ -129,33 +175,39 @@ func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int64
 }
 
 const releaseProduct = `-- name: ReleaseProduct :one
-UPDATE products SET quantity = quantity - $2, reserved = reserved - $2 WHERE id = $1 AND $2 > 0 AND reserved >= $2 AND quantity >= $2 RETURNING id
+UPDATE product_stocks 
+SET quantity = quantity - $2, reserved = reserved - $2 
+WHERE product_id = $1 AND $2 > 0 AND reserved >= $2 AND quantity >= $2 
+RETURNING product_id
 `
 
 type ReleaseProductParams struct {
-	ID       int64
-	Quantity int64
+	ProductID int64
+	Quantity  int64
 }
 
 func (q *Queries) ReleaseProduct(ctx context.Context, arg ReleaseProductParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, releaseProduct, arg.ID, arg.Quantity)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	row := q.db.QueryRowContext(ctx, releaseProduct, arg.ProductID, arg.Quantity)
+	var product_id int64
+	err := row.Scan(&product_id)
+	return product_id, err
 }
 
 const reserveProduct = `-- name: ReserveProduct :one
-UPDATE products SET reserved = reserved + $2 WHERE id = $1 AND $2 > 0 AND (quantity - reserved) >= $2 RETURNING id
+UPDATE product_stocks 
+SET reserved = reserved + $2 
+WHERE product_id = $1 AND $2 > 0 AND (quantity - reserved) >= $2 
+RETURNING product_id
 `
 
 type ReserveProductParams struct {
-	ID       int64
-	Reserved int64
+	ProductID int64
+	Reserved  int64
 }
 
 func (q *Queries) ReserveProduct(ctx context.Context, arg ReserveProductParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, reserveProduct, arg.ID, arg.Reserved)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	row := q.db.QueryRowContext(ctx, reserveProduct, arg.ProductID, arg.Reserved)
+	var product_id int64
+	err := row.Scan(&product_id)
+	return product_id, err
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
 	"github.com/kelar1s/go-freight/internal/inventory/service"
 	"github.com/kelar1s/go-freight/internal/inventory/transport/rest"
+	"github.com/kelar1s/go-freight/internal/pkg/cache"
 	"github.com/kelar1s/go-freight/internal/pkg/config"
 	"github.com/kelar1s/go-freight/internal/pkg/logger"
 	"github.com/kelar1s/go-freight/internal/pkg/postgres"
@@ -32,22 +33,44 @@ func Run() error {
 	if err != nil {
 		return fmt.Errorf("init postgres: %w", err)
 	}
-
 	log.Info("connected to postgres")
-
 	defer func() {
 		log.Info("closing database connection")
 		if err := db.Close(); err != nil {
-			log.Error("close database connection", logger.Err(err))
+			log.Error("failed to close database connection", logger.Err(err))
+		}
+	}()
+
+	redisCache, err := cache.NewRedisCache(
+		cfg.Redis.Address(),
+		cfg.Redis.Password,
+		cfg.Redis.DB,
+		cfg.Redis.DialTimeout,
+		cfg.Redis.ReadTimeout,
+		cfg.Redis.WriteTimeout,
+	)
+	if err != nil {
+		return fmt.Errorf("init redis: %w", err)
+	}
+	log.Info("connected to redis")
+
+	logCache := cache.NewLoggingCache(*redisCache, log)
+
+	defer func() {
+		log.Info("closing redis connection")
+		if err := redisCache.Close(); err != nil {
+			log.Error("failed to close redis connection", logger.Err(err))
 		}
 	}()
 
 	queries := pg.New(db)
-	warehouseRepo := repository.NewWarehouseRepo(queries)
-	productRepo := repository.NewProductRepo(queries)
 
-	warehouseService := service.NewWarehouseService(warehouseRepo)
-	productService := service.NewProductService(productRepo)
+	warehouseRepo := repository.NewWarehouseRepo(queries)
+
+	productRepo := repository.NewProductRepo(db)
+
+	warehouseService := service.NewWarehouseService(warehouseRepo, logCache, cfg.Redis.TTL)
+	productService := service.NewProductService(productRepo, logCache, cfg.Redis.TTL)
 
 	warehouseHandler := rest.NewWarehouseHandler(warehouseService, log)
 	productHandler := rest.NewProductHandler(productService, log)

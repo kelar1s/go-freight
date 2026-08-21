@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,8 @@ import (
 	"github.com/kelar1s/go-freight/internal/inventory/transport/rest"
 	"github.com/kelar1s/go-freight/internal/inventory/transport/rest/mocks"
 )
+
+var mockTime = time.Date(2026, 4, 11, 12, 0, 0, 0, time.UTC)
 
 func TestProductHandler_Create(t *testing.T) {
 	tests := []struct {
@@ -30,7 +33,10 @@ func TestProductHandler_Create(t *testing.T) {
 			name:        "Success",
 			requestBody: `{"warehouse_id":1,"name":"Box","quantity":10}`,
 			mockSetup: func(s *mocks.ProductService) {
-				p := &model.Product{ID: 1, WarehouseID: 1, Name: "Box", Quantity: 10, Reserved: 0, CreatedAt: mockTime}
+				p := &model.Product{
+					ProductMeta:  model.ProductMeta{ID: 1, WarehouseID: 1, Name: "Box", CreatedAt: mockTime},
+					ProductStock: model.ProductStock{Quantity: 10, Reserved: 0},
+				}
 				s.On("Create", mock.Anything, int64(1), "Box", int64(10)).Return(p, nil).Once()
 			},
 			expectedStatus: http.StatusCreated,
@@ -96,7 +102,10 @@ func TestProductHandler_Get(t *testing.T) {
 			name:      "Success",
 			productID: "1",
 			mockSetup: func(s *mocks.ProductService) {
-				p := &model.Product{ID: 1, WarehouseID: 1, Name: "A", Quantity: 5, Reserved: 2, CreatedAt: mockTime}
+				p := &model.Product{
+					ProductMeta:  model.ProductMeta{ID: 1, WarehouseID: 1, Name: "A", CreatedAt: mockTime},
+					ProductStock: model.ProductStock{Quantity: 5, Reserved: 2},
+				}
 				s.On("Get", mock.Anything, int64(1)).Return(p, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
@@ -171,7 +180,12 @@ func TestProductHandler_ListByWarehouse(t *testing.T) {
 			name:        "Success",
 			warehouseID: "1",
 			mockSetup: func(s *mocks.ProductService) {
-				pList := []model.Product{{ID: 1, WarehouseID: 1, Name: "P1", Quantity: 10, Reserved: 0, CreatedAt: mockTime}}
+				pList := []model.Product{
+					{
+						ProductMeta:  model.ProductMeta{ID: 1, WarehouseID: 1, Name: "P1", CreatedAt: mockTime},
+						ProductStock: model.ProductStock{Quantity: 10, Reserved: 0},
+					},
+				}
 				s.On("ListByWarehouse", mock.Anything, int64(1)).Return(pList, nil).Once()
 			},
 			expectedStatus: http.StatusOK,
@@ -211,7 +225,6 @@ func TestProductHandler_ListByWarehouse(t *testing.T) {
 			h := rest.NewProductHandler(mockSvc, slog.New(slog.NewTextHandler(io.Discard, nil)))
 
 			r := chi.NewRouter()
-			// Обрати внимание на путь, по которому тестируем
 			r.Get("/api/v1/warehouses/{id}/products", h.ListByWarehouse)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/v1/warehouses/"+tc.warehouseID+"/products", nil)
@@ -354,7 +367,6 @@ func TestProductHandler_StockOperations(t *testing.T) {
 					productID:   "1",
 					requestBody: `{"quantity":-5}`,
 					mockSetup: func(s *mocks.ProductService) {
-						// Здесь мы имитируем ошибку уровня бизнес-логики (когда сервис вернул ErrInvalidQuantity)
 						s.On(op.methodName, mock.Anything, int64(1), int64(-5)).Return(model.ErrInvalidQuantity).Once()
 					},
 					expectedStatus: http.StatusBadRequest,
@@ -390,10 +402,8 @@ func TestProductHandler_StockOperations(t *testing.T) {
 
 					r := chi.NewRouter()
 
-					// ВАЖНО: Заменили .Post на .Patch для полного соответствия реальному роутеру!
 					r.Patch("/api/v1/products/{id}"+op.route, op.handlerFn(h))
 
-					// ВАЖНО: Отправляем запрос методом http.MethodPatch
 					req := httptest.NewRequest(http.MethodPatch, "/api/v1/products/"+tc.productID+op.route, bytes.NewBufferString(tc.requestBody))
 					rr := httptest.NewRecorder()
 					r.ServeHTTP(rr, req)

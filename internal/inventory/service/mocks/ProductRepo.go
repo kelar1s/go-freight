@@ -212,24 +212,24 @@ func (_c *ProductRepo_Delete_Call) RunAndReturn(run func(context.Context, int64)
 	return _c
 }
 
-// Get provides a mock function with given fields: ctx, id
-func (_m *ProductRepo) Get(ctx context.Context, id int64) (*model.Product, error) {
+// GetMeta provides a mock function with given fields: ctx, id
+func (_m *ProductRepo) GetMeta(ctx context.Context, id int64) (*model.ProductMeta, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Get")
+		panic("no return value specified for GetMeta")
 	}
 
-	var r0 *model.Product
+	var r0 *model.ProductMeta
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Product, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.ProductMeta, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Product); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.ProductMeta); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Product)
+			r0 = ret.Get(0).(*model.ProductMeta)
 		}
 	}
 
@@ -242,31 +242,90 @@ func (_m *ProductRepo) Get(ctx context.Context, id int64) (*model.Product, error
 	return r0, r1
 }
 
-// ProductRepo_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
-type ProductRepo_Get_Call struct {
+// ProductRepo_GetMeta_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMeta'
+type ProductRepo_GetMeta_Call struct {
 	*mock.Call
 }
 
-// Get is a helper method to define mock.On call
+// GetMeta is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id int64
-func (_e *ProductRepo_Expecter) Get(ctx interface{}, id interface{}) *ProductRepo_Get_Call {
-	return &ProductRepo_Get_Call{Call: _e.mock.On("Get", ctx, id)}
+func (_e *ProductRepo_Expecter) GetMeta(ctx interface{}, id interface{}) *ProductRepo_GetMeta_Call {
+	return &ProductRepo_GetMeta_Call{Call: _e.mock.On("GetMeta", ctx, id)}
 }
 
-func (_c *ProductRepo_Get_Call) Run(run func(ctx context.Context, id int64)) *ProductRepo_Get_Call {
+func (_c *ProductRepo_GetMeta_Call) Run(run func(ctx context.Context, id int64)) *ProductRepo_GetMeta_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
 
-func (_c *ProductRepo_Get_Call) Return(_a0 *model.Product, _a1 error) *ProductRepo_Get_Call {
+func (_c *ProductRepo_GetMeta_Call) Return(_a0 *model.ProductMeta, _a1 error) *ProductRepo_GetMeta_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *ProductRepo_Get_Call) RunAndReturn(run func(context.Context, int64) (*model.Product, error)) *ProductRepo_Get_Call {
+func (_c *ProductRepo_GetMeta_Call) RunAndReturn(run func(context.Context, int64) (*model.ProductMeta, error)) *ProductRepo_GetMeta_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetStock provides a mock function with given fields: ctx, id
+func (_m *ProductRepo) GetStock(ctx context.Context, id int64) (*model.ProductStock, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetStock")
+	}
+
+	var r0 *model.ProductStock
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.ProductStock, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.ProductStock); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.ProductStock)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ProductRepo_GetStock_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetStock'
+type ProductRepo_GetStock_Call struct {
+	*mock.Call
+}
+
+// GetStock is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int64
+func (_e *ProductRepo_Expecter) GetStock(ctx interface{}, id interface{}) *ProductRepo_GetStock_Call {
+	return &ProductRepo_GetStock_Call{Call: _e.mock.On("GetStock", ctx, id)}
+}
+
+func (_c *ProductRepo_GetStock_Call) Run(run func(ctx context.Context, id int64)) *ProductRepo_GetStock_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *ProductRepo_GetStock_Call) Return(_a0 *model.ProductStock, _a1 error) *ProductRepo_GetStock_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *ProductRepo_GetStock_Call) RunAndReturn(run func(context.Context, int64) (*model.ProductStock, error)) *ProductRepo_GetStock_Call {
 	_c.Call.Return(run)
 	return _c
 }
