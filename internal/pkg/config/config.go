@@ -19,8 +19,8 @@ type Config struct {
 
 type HTTPServer struct {
 	Address     string        `yaml:"address" env:"HTTP_SERVER_ADDRESS" env-default:"0.0.0.0:8080"`
-	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	Timeout     time.Duration `yaml:"timeout" env:"HTTP_SERVER_TIMEOUT" env-default:"4s"`
+	IdleTimeout time.Duration `yaml:"idle_timeout" env:"HTTP_SERVER_IDLE_TIMEOUT" env-default:"60s"`
 }
 
 type Database struct {
@@ -38,9 +38,9 @@ type Redis struct {
 	Password     string        `yaml:"password" env:"REDIS_PASSWORD" env-default:""`
 	DB           int           `yaml:"db" env:"REDIS_DB" env-default:"0"`
 	TTL          time.Duration `yaml:"ttl" env:"REDIS_TTL" env-default:"5m"`
-	DialTimeout  time.Duration `yaml:"dial_timeout" env-default:"1s"`
-	ReadTimeout  time.Duration `yaml:"read_timeout" env-default:"200ms"`
-	WriteTimeout time.Duration `yaml:"write_timeout" env-default:"200ms"`
+	DialTimeout  time.Duration `yaml:"dial_timeout" env:"REDIS_DIAL_TIMEOUT" env-default:"1s"`
+	ReadTimeout  time.Duration `yaml:"read_timeout" env:"REDIS_READ_TIMEOUT" env-default:"200ms"`
+	WriteTimeout time.Duration `yaml:"write_timeout" env:"REDIS_WRITE_TIMEOUT" env-default:"200ms"`
 }
 
 func (d Database) DSN() string {

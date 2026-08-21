@@ -9,17 +9,16 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     environment:
       - CONFIG_PATH=/app/config/local.yaml
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=gofreight
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - REDIS_DB=0
       - REDIS_TTL=5m
     depends_on:
