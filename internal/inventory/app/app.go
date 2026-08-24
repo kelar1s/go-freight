@@ -10,104 +10,89 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kelar1s/go-freight/internal/inventory/repository"
-	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
-	"github.com/kelar1s/go-freight/internal/inventory/service"
-	"github.com/kelar1s/go-freight/internal/inventory/transport/rest"
-	"github.com/kelar1s/go-freight/internal/pkg/cache"
+	"github.com/kelar1s/go-freight/internal/pkg/closer"
 	"github.com/kelar1s/go-freight/internal/pkg/config"
 	"github.com/kelar1s/go-freight/internal/pkg/logger"
-	"github.com/kelar1s/go-freight/internal/pkg/postgres"
 )
 
-func Run() error {
-	cfg := config.MustLoad()
-	log := logger.Setup(cfg.Env)
+type App struct {
+	diContainer *diContainer
+	cfg         *config.Config
+	log         *slog.Logger
+	httpServer  *http.Server
+	closer      *closer.Closer
+}
 
-	log.Info("starting inventory service", slog.String("env", cfg.Env))
+func New(cfg *config.Config, log *slog.Logger) (*App, error) {
+	c := closer.New(log)
 
+	a := &App{
+		diContainer: newDIContainer(cfg, log, c),
+		cfg:         cfg,
+		log:         log,
+		closer:      c,
+	}
+
+	if err := a.initDeps(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
+	}
+
+	return a, nil
+}
+
+func (a *App) initDeps(ctx context.Context) error {
+	if err := a.diContainer.InitTelemetry(ctx); err != nil {
+		return err
+	}
+
+	router, err := a.diContainer.Router(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to init router: %w", err)
+	}
+
+	a.httpServer = &http.Server{
+		Addr:         a.cfg.HTTPServer.Address,
+		Handler:      router,
+		ReadTimeout:  a.cfg.HTTPServer.Timeout,
+		WriteTimeout: a.cfg.HTTPServer.Timeout,
+		IdleTimeout:  a.cfg.HTTPServer.IdleTimeout,
+	}
+
+	return nil
+}
+
+func (a *App) Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	db, err := postgres.New(ctx, cfg.Database.DSN())
-	if err != nil {
-		return fmt.Errorf("init postgres: %w", err)
-	}
-	log.Info("connected to postgres")
-	defer func() {
-		log.Info("closing database connection")
-		if err := db.Close(); err != nil {
-			log.Error("failed to close database connection", logger.Err(err))
-		}
-	}()
-
-	redisCache, err := cache.NewRedisCache(
-		cfg.Redis.Address(),
-		cfg.Redis.Password,
-		cfg.Redis.DB,
-		cfg.Redis.DialTimeout,
-		cfg.Redis.ReadTimeout,
-		cfg.Redis.WriteTimeout,
-	)
-	if err != nil {
-		return fmt.Errorf("init redis: %w", err)
-	}
-	log.Info("connected to redis")
-
-	logCache := cache.NewLoggingCache(*redisCache, log)
-
-	defer func() {
-		log.Info("closing redis connection")
-		if err := redisCache.Close(); err != nil {
-			log.Error("failed to close redis connection", logger.Err(err))
-		}
-	}()
-
-	queries := pg.New(db)
-
-	warehouseRepo := repository.NewWarehouseRepo(queries)
-
-	productRepo := repository.NewProductRepo(db)
-
-	warehouseService := service.NewWarehouseService(warehouseRepo, logCache, cfg.Redis.TTL)
-	productService := service.NewProductService(productRepo, logCache, cfg.Redis.TTL)
-
-	warehouseHandler := rest.NewWarehouseHandler(warehouseService, log)
-	productHandler := rest.NewProductHandler(productService, log)
-
-	router := rest.NewRouter(productHandler, warehouseHandler, log)
-
-	srv := &http.Server{
-		Addr:         cfg.HTTPServer.Address,
-		Handler:      router,
-		ReadTimeout:  cfg.HTTPServer.Timeout,
-		WriteTimeout: cfg.HTTPServer.Timeout,
-		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
-	}
-
-	srvErr := make(chan error, 1)
+	a.log.Info("starting inventory service", slog.String("env", a.cfg.Env), slog.String("addr", a.cfg.HTTPServer.Address))
 
 	go func() {
-		log.Info("http server is listening", slog.String("address", cfg.HTTPServer.Address))
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			srvErr <- fmt.Errorf("listen and serve: %w", err)
+		if err := a.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			a.log.Error("http server error", logger.Err(err))
 		}
 	}()
 
-	select {
-	case err := <-srvErr:
-		return err
-	case <-ctx.Done():
-		log.Info("received shutdown signal, stopping server")
+	<-ctx.Done()
+	a.log.Info("received shutdown signal, stopping application...")
+	
+	stop()
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
+
+	if err := a.httpServer.Shutdown(shutdownCtx); err != nil {
+		a.log.Error("failed to stop http server", logger.Err(err))
+	} else {
+		a.log.Info("http server gracefully stopped (no active connections)")
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	closerCtx, closerCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer closerCancel()
 
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("shutdown http server: %w", err)
+	if err := a.closer.CloseAll(closerCtx); err != nil {
+		a.log.Error("failed to close resources", logger.Err(err))
 	}
 
-	log.Info("server gracefully stopped")
 	return nil
 }

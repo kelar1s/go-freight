@@ -1,8 +1,11 @@
 package logger
 
 import (
+	"context"
 	"log/slog"
 	"os"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -11,19 +14,40 @@ const (
 	envDev   = "dev"
 )
 
+type otelHandler struct {
+	slog.Handler
+}
+
+func (h otelHandler) Handle(ctx context.Context, r slog.Record) error {
+	spanContext := trace.SpanContextFromContext(ctx)
+	if spanContext.HasTraceID() {
+		r.AddAttrs(
+			slog.String("trace_id", spanContext.TraceID().String()),
+			slog.String("span_id", spanContext.SpanID().String()),
+		)
+	}
+	return h.Handler.Handle(ctx, r)
+}
+
 func Setup(env string) *slog.Logger {
-	var log *slog.Logger
+	var baseHandler slog.Handler
+
+	opts := &slog.HandlerOptions{Level: slog.LevelDebug}
+
 	switch env {
 	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		baseHandler = slog.NewTextHandler(os.Stdout, opts)
 	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		baseHandler = slog.NewJSONHandler(os.Stdout, opts)
 	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		opts.Level = slog.LevelInfo
+		baseHandler = slog.NewJSONHandler(os.Stdout, opts)
 	default:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		opts.Level = slog.LevelInfo
+		baseHandler = slog.NewJSONHandler(os.Stdout, opts)
 	}
-	return log
+
+	return slog.New(otelHandler{Handler: baseHandler})
 }
 
 func Err(err error) slog.Attr {

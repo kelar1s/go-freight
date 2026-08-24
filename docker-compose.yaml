@@ -21,11 +21,20 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - REDIS_DB=0
       - REDIS_TTL=5m
+      - TELEMETRY_TEMPO_ENDPOINT=tempo:4317
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+      promtail:
+        condition: service_started
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "gofreight_inventory"
+        syslog-format: "rfc5424micro"
 
   db:
     image: postgres:15-alpine
@@ -44,6 +53,7 @@ services:
       retries: 5
     volumes:
       - pgdata:/var/lib/postgresql/data
+
   redis:
     image: redis:7.2-alpine
     container_name: gofreight_redis
@@ -57,6 +67,61 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gofreight_prometheus
+    volumes:
+      - ./deploy/observability/prometheus/config.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: gofreight_loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./deploy/observability/loki/config.yaml:/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: gofreight_promtail
+    volumes:
+      - ./deploy/observability/promtail/config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    ports:
+      - "1514:1514"
+    depends_on:
+      - loki
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: gofreight_tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./deploy/observability/tempo/config.yaml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gofreight_grafana
+    volumes:
+      - ./deploy/observability/grafana/provisioning:/etc/grafana/provisioning
+      - ./deploy/observability/grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
 
 volumes:
   pgdata:

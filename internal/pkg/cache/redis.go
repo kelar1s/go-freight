@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -25,6 +26,14 @@ func NewRedisCache(addr string, password string, db int, dialTimeout, readTimeou
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 	})
+
+	if err := redisotel.InstrumentTracing(client); err != nil {
+		return nil, fmt.Errorf("failed to instrument redis tracing: %w", err)
+	}
+
+	if err := redisotel.InstrumentMetrics(client); err != nil {
+		return nil, fmt.Errorf("failed to instrument redis metrics: %w", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), dialTimeout)
 	defer cancel()

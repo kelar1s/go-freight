@@ -22,3 +22,7 @@ redis:
   dial_timeout: "1s"
   read_timeout: "200ms"
   write_timeout: "200ms"
+
+telemetry:
+  service_name: "inventory"
+  tempo_endpoint: "localhost:4317" 

@@ -21,9 +21,19 @@ tasks:
       - docker compose up -d --build
 
   infra:
-    desc: "Поднять инфраструктуру (БД и Redis)"
+    desc: "Поднять базовую инфраструктуру (БД и Redis)"
     cmds:
       - docker compose up -d db redis
+
+  obs:
+    desc: "Поднять стек наблюдаемости (Tempo, Loki, Prometheus, Grafana)"
+    cmds:
+      - docker compose up -d tempo loki prometheus grafana
+
+  infra-all:
+    desc: "Поднять базу, кэш и всю наблюдаемость для локальной разработки"
+    cmds:
+      - docker compose up -d db redis tempo loki prometheus grafana
       
   migrate-create:
     desc: "Создать новый файл миграции: task migrate-create -- name_of_migration"

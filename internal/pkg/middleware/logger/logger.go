@@ -7,26 +7,35 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type loggerKey struct{}
 
 func New(log *slog.Logger) func(next http.Handler) http.Handler {
 	log = log.With(slog.String("component", "middleware/logger"))
-	log.Info("logger middleware enabled")
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			spanContext := trace.SpanContextFromContext(ctx)
+
+			traceID := ""
+			if spanContext.HasTraceID() {
+				traceID = spanContext.TraceID().String()
+			}
+
 			entry := log.With(
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
 				slog.String("remote_addr", r.RemoteAddr),
 				slog.String("user_agent", r.UserAgent()),
-				slog.String("request_id", middleware.GetReqID(r.Context())),
+				slog.String("trace_id", traceID),
 			)
-			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 			t1 := time.Now()
+
 			defer func() {
 				args := []any{
 					slog.Int("status", ww.Status()),
@@ -36,15 +45,15 @@ func New(log *slog.Logger) func(next http.Handler) http.Handler {
 
 				switch status := ww.Status(); {
 				case status >= 500:
-					entry.Error("request completed with server error", args...)
+					entry.ErrorContext(ctx, "request completed with server error", args...)
 				case status >= 400:
-					entry.Warn("request completed with client error", args...)
+					entry.WarnContext(ctx, "request completed with client error", args...)
 				default:
-					entry.Info("request completed", args...)
+					entry.InfoContext(ctx, "request completed", args...)
 				}
 			}()
 
-			ctxWithLog := context.WithValue(r.Context(), loggerKey{}, entry)
+			ctxWithLog := context.WithValue(ctx, loggerKey{}, entry)
 			next.ServeHTTP(ww, r.WithContext(ctxWithLog))
 		})
 	}

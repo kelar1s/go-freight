@@ -15,6 +15,7 @@ type Config struct {
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Database   Database   `yaml:"database"`
 	Redis      Redis      `yaml:"redis"`
+	Telemetry  Telemetry  `yaml:"telemetry"`
 }
 
 type HTTPServer struct {
@@ -41,6 +42,11 @@ type Redis struct {
 	DialTimeout  time.Duration `yaml:"dial_timeout" env:"REDIS_DIAL_TIMEOUT" env-default:"1s"`
 	ReadTimeout  time.Duration `yaml:"read_timeout" env:"REDIS_READ_TIMEOUT" env-default:"200ms"`
 	WriteTimeout time.Duration `yaml:"write_timeout" env:"REDIS_WRITE_TIMEOUT" env-default:"200ms"`
+}
+
+type Telemetry struct {
+	ServiceName   string `yaml:"service_name" env:"TELEMETRY_SERVICE_NAME" env-default:"inventory-service"`
+	TempoEndpoint string `yaml:"tempo_endpoint" env:"TELEMETRY_TEMPO_ENDPOINT" env-default:"localhost:4317"`
 }
 
 func (d Database) DSN() string {

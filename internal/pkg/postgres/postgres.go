@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 func New(ctx context.Context, dsn string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dsn)
+	db, err := otelsql.Open("postgres", dsn, otelsql.WithAttributes(
+		semconv.DBSystemPostgreSQL,
+	))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database connection: %w", err)
 	}
@@ -18,6 +22,10 @@ func New(ctx context.Context, dsn string) (*sql.DB, error) {
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
 	db.SetConnMaxLifetime(5 * time.Minute)
+
+	if _, err := otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(semconv.DBSystemPostgreSQL)); err != nil {
+		_ = err
+	}
 
 	dbCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

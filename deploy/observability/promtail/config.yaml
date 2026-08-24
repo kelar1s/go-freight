@@ -1,0 +1,20 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    syslog:
+      listen_address: 0.0.0.0:1514
+      label_structured_data: yes
+      labels:
+        job: docker
+    relabel_configs:
+      - source_labels: ['__syslog_message_app_name']
+        target_label: 'service_name'
