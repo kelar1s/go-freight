@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/kelar1s/go-freight/internal/inventory/model"
+	"golang.org/x/sync/singleflight"
 )
 
 //go:generate mockery --name=WarehouseRepo --output=./mocks --outpkg=mocks --with-expecter=true
@@ -22,6 +23,7 @@ type WarehouseService struct {
 	repo     WarehouseRepo
 	cache    Cache
 	cacheTTL time.Duration
+	sf       singleflight.Group
 }
 
 func NewWarehouseService(repo WarehouseRepo, cache Cache, cacheTTL time.Duration) *WarehouseService {
@@ -67,17 +69,31 @@ func (s *WarehouseService) Get(ctx context.Context, id int64) (*model.Warehouse,
 	key := warehouseCacheKey(id)
 	var warehouse *model.Warehouse
 
-	if err := s.cache.Get(ctx, key, &warehouse); err == nil {
-		return warehouse, nil
-	}
-
-	warehouse, err := s.repo.Get(ctx, id)
+	err := s.cache.Get(ctx, key, &warehouse)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		val, sfErr, _ := s.sf.Do(key, func() (any, error) {
+			var cachedData *model.Warehouse
+			if cErr := s.cache.Get(ctx, key, &cachedData); cErr == nil {
+				return cachedData, nil
+			}
+			detachedCtx := context.WithoutCancel(ctx)
+			timeoutCtx, cancel := context.WithTimeout(detachedCtx, 3*time.Second)
+			defer cancel()
+			repoData, err := s.repo.Get(timeoutCtx, id)
+			if err != nil {
+				return nil, err
+			}
+			_ = s.cache.Set(ctx, key, repoData, s.cacheTTL)
+			return repoData, nil
+		})
+		if sfErr != nil {
+			return nil, fmt.Errorf("%s: %w", op, sfErr)
+		}
+		warehouse = val.(*model.Warehouse)
 	}
 
-	_ = s.cache.Set(ctx, key, warehouse, s.cacheTTL)
 	return warehouse, nil
+
 }
 
 func (s *WarehouseService) List(ctx context.Context) ([]model.Warehouse, error) {

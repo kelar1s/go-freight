@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/XSAM/otelsql"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 func New(ctx context.Context, dsn string) (*sql.DB, error) {
-	db, err := otelsql.Open("postgres", dsn, otelsql.WithAttributes(
+	db, err := otelsql.Open("pgx", dsn, otelsql.WithAttributes(
 		semconv.DBSystemPostgreSQL,
 	))
 	if err != nil {

@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kelar1s/go-freight/internal/inventory/model"
 	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
-	"github.com/lib/pq"
 )
 
 type ProductRepo struct {
@@ -187,8 +187,8 @@ func handleStockError(op string, err error) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("%s: %w", op, model.ErrProductNotFound)
 	}
-	if pqErr, ok := errors.AsType[*pq.Error](err); ok {
-		if pqErr.Code == "23514" {
+	if pgxErr, ok := errors.AsType[*pgconn.PgError](err); ok {
+		if pgxErr.Code == "23514" {
 			return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
 		}
 	}

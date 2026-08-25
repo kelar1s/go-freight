@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/kelar1s/go-freight/internal/inventory/model"
+	"golang.org/x/sync/singleflight"
 )
 
 //go:generate mockery --name=Cache --output=./mocks --outpkg=mocks --with-expecter=true
@@ -33,6 +34,7 @@ type ProductService struct {
 	repo     ProductRepo
 	cache    Cache
 	cacheTTL time.Duration
+	sf       singleflight.Group
 }
 
 func NewProductService(repo ProductRepo, cache Cache, cacheTTL time.Duration) *ProductService {
@@ -91,11 +93,25 @@ func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, err
 
 	err := s.cache.Get(ctx, key, &meta)
 	if err != nil {
-		meta, err = s.repo.GetMeta(ctx, id)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
+		val, sfErr, _ := s.sf.Do(key, func() (any, error) {
+			var cachedMeta *model.ProductMeta
+			if cerr := s.cache.Get(ctx, key, &cachedMeta); cerr == nil {
+				return cachedMeta, nil
+			}
+			detachedCtx := context.WithoutCancel(ctx)
+			timeoutCtx, cancel := context.WithTimeout(detachedCtx, 3*time.Second)
+			defer cancel()
+			repoMeta, err := s.repo.GetMeta(timeoutCtx, id)
+			if err != nil {
+				return nil, err
+			}
+			_ = s.cache.Set(ctx, key, repoMeta, s.cacheTTL)
+			return repoMeta, nil
+		})
+		if sfErr != nil {
+			return nil, fmt.Errorf("%s: %w", op, sfErr)
 		}
-		_ = s.cache.Set(ctx, key, meta, s.cacheTTL)
+		meta = val.(*model.ProductMeta)
 	}
 
 	stock, err := s.repo.GetStock(ctx, id)
