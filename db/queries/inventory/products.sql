@@ -29,23 +29,23 @@ ORDER BY p.id;
 -- name: AdjustProductQuantity :one
 UPDATE product_stocks 
 SET quantity = quantity + $2 
-WHERE product_id = $1 AND (quantity + $2) >= reserved 
+WHERE product_id = $1 
 RETURNING product_id;
 
 -- name: ReserveProduct :one
 UPDATE product_stocks 
 SET reserved = reserved + $2 
-WHERE product_id = $1 AND $2 > 0 AND (quantity - reserved) >= $2 
+WHERE product_id = $1
 RETURNING product_id;
 
 -- name: ReleaseProduct :one
 UPDATE product_stocks 
 SET quantity = quantity - $2, reserved = reserved - $2 
-WHERE product_id = $1 AND $2 > 0 AND reserved >= $2 AND quantity >= $2 
+WHERE product_id = $1
 RETURNING product_id;
 
 -- name: CancelReservation :one
 UPDATE product_stocks 
 SET reserved = reserved - $2 
-WHERE product_id = $1 AND $2 > 0 AND reserved >= $2 
+WHERE product_id = $1
 RETURNING product_id;

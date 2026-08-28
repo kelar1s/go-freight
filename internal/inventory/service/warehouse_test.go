@@ -103,7 +103,7 @@ func TestWarehouseService_Get(t *testing.T) {
 			name:    "Success - Cache Miss (goes to DB)",
 			inputID: 1,
 			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
-				c.EXPECT().Get(mock.Anything, "warehouse:1", mock.Anything).Return(errors.New("cache miss")).Once()
+				c.EXPECT().Get(mock.Anything, "warehouse:1", mock.Anything).Return(errors.New("cache miss")).Twice()
 
 				w := &model.Warehouse{ID: 1, Name: "Main"}
 				r.EXPECT().Get(mock.Anything, int64(1)).Return(w, nil).Once()

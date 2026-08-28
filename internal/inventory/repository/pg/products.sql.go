@@ -13,7 +13,7 @@ import (
 const adjustProductQuantity = `-- name: AdjustProductQuantity :one
 UPDATE product_stocks 
 SET quantity = quantity + $2 
-WHERE product_id = $1 AND (quantity + $2) >= reserved 
+WHERE product_id = $1 
 RETURNING product_id
 `
 
@@ -32,7 +32,7 @@ func (q *Queries) AdjustProductQuantity(ctx context.Context, arg AdjustProductQu
 const cancelReservation = `-- name: CancelReservation :one
 UPDATE product_stocks 
 SET reserved = reserved - $2 
-WHERE product_id = $1 AND $2 > 0 AND reserved >= $2 
+WHERE product_id = $1
 RETURNING product_id
 `
 
@@ -177,7 +177,7 @@ func (q *Queries) ListProductsByWarehouse(ctx context.Context, warehouseID int64
 const releaseProduct = `-- name: ReleaseProduct :one
 UPDATE product_stocks 
 SET quantity = quantity - $2, reserved = reserved - $2 
-WHERE product_id = $1 AND $2 > 0 AND reserved >= $2 AND quantity >= $2 
+WHERE product_id = $1
 RETURNING product_id
 `
 
@@ -196,7 +196,7 @@ func (q *Queries) ReleaseProduct(ctx context.Context, arg ReleaseProductParams) 
 const reserveProduct = `-- name: ReserveProduct :one
 UPDATE product_stocks 
 SET reserved = reserved + $2 
-WHERE product_id = $1 AND $2 > 0 AND (quantity - reserved) >= $2 
+WHERE product_id = $1
 RETURNING product_id
 `
 

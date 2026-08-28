@@ -126,7 +126,7 @@ func TestProductService_Get(t *testing.T) {
 			name:    "Success - Cache Miss",
 			inputID: 1,
 			mockSetup: func(r *mocks.ProductRepo, c *mocks.Cache) {
-				c.EXPECT().Get(mock.Anything, "product:meta:1", mock.Anything).Return(errCache).Once()
+				c.EXPECT().Get(mock.Anything, "product:meta:1", mock.Anything).Return(errCache).Twice()
 				meta := &model.ProductMeta{ID: 1, WarehouseID: 1, Name: "Box", CreatedAt: mockTime}
 				r.EXPECT().GetMeta(mock.Anything, int64(1)).Return(meta, nil).Once()
 				c.EXPECT().Set(mock.Anything, "product:meta:1", meta, mockTTL).Return(nil).Once()
@@ -166,7 +166,7 @@ func TestProductService_Get(t *testing.T) {
 			name:    "Error - GetMeta Repo Error",
 			inputID: 1,
 			mockSetup: func(r *mocks.ProductRepo, c *mocks.Cache) {
-				c.EXPECT().Get(mock.Anything, "product:meta:1", mock.Anything).Return(errCache).Once()
+				c.EXPECT().Get(mock.Anything, "product:meta:1", mock.Anything).Return(errCache).Twice()
 				r.EXPECT().GetMeta(mock.Anything, int64(1)).Return(nil, errRepo).Once()
 			},
 			expectedResult: nil,
