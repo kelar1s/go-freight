@@ -65,24 +65,33 @@ func (a *App) Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	srvErr := make(chan error, 1)
+
 	a.log.Info("starting inventory service", slog.String("env", a.cfg.Env), slog.String("addr", a.cfg.HTTPServer.Address))
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			a.log.Error("http server error", logger.Err(err))
+			srvErr <- err
 		}
 	}()
 
-	<-ctx.Done()
-	a.log.Info("received shutdown signal, stopping application...")
-	
+	var runErr error
+
+	select {
+	case <-ctx.Done():
+		a.log.Info("received shutdown signal, stopping application")
+	case err := <-srvErr:
+		runErr = fmt.Errorf("http server crashed: %w", err)
+		a.log.Warn("server failed on start or during run", logger.Err(err))
+	}
+
 	stop()
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer shutdownCancel()
 
 	if err := a.httpServer.Shutdown(shutdownCtx); err != nil {
-		a.log.Error("failed to stop http server", logger.Err(err))
+		runErr = errors.Join(fmt.Errorf("failed to stop http server: %w", err))
 	} else {
 		a.log.Info("http server gracefully stopped (no active connections)")
 	}
@@ -91,8 +100,8 @@ func (a *App) Run() error {
 	defer closerCancel()
 
 	if err := a.closer.CloseAll(closerCtx); err != nil {
-		a.log.Error("failed to close resources", logger.Err(err))
+		runErr = errors.Join(fmt.Errorf("failed to close resources: %w", err))
 	}
 
-	return nil
+	return runErr
 }
