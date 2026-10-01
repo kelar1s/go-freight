@@ -216,7 +216,7 @@ func TestWarehouseService_Update(t *testing.T) {
 					return w.ID == 1 && w.Name == "New" && w.Location == "Loc"
 				})).Return(nil).Once()
 
-				c.EXPECT().Delete(mock.Anything, "warehouse:1").Return(nil).Once()
+				c.EXPECT().Delete(mock.Anything, []string{"warehouse:1"}).Return(nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -258,7 +258,7 @@ func TestWarehouseService_Delete(t *testing.T) {
 			inputID: 1,
 			mockSetup: func(r *mocks.WarehouseRepo, c *mocks.Cache) {
 				r.EXPECT().Delete(mock.Anything, int64(1)).Return(nil).Once()
-				c.EXPECT().Delete(mock.Anything, "warehouse:1").Return(nil).Once()
+				c.EXPECT().Delete(mock.Anything, []string{"warehouse:1"}).Return(nil).Once()
 			},
 			expectedError: nil,
 		},

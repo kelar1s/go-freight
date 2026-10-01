@@ -1,0 +1,16 @@
+dir: "{{.InterfaceDir}}/mocks"
+pkgname: mocks
+structname: "{{.InterfaceName}}"
+filename: "{{.InterfaceName | snakecase}}.go"
+
+packages:
+  github.com/kelar1s/go-freight/internal/inventory/service:
+    interfaces:
+      Cache: {}
+      ProductRepo: {}
+      WarehouseRepo: {}
+
+  github.com/kelar1s/go-freight/internal/inventory/transport/rest:
+    interfaces:
+      ProductService: {}
+      WarehouseService: {}

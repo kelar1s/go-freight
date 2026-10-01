@@ -90,7 +90,7 @@ tasks:
   gen:
     desc: "Генерация моков и sqlc"
     cmds:
-      - go generate ./...
+      - go tool mockery
       - sqlc generate
     silent: false
 

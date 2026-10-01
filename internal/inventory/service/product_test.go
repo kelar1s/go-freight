@@ -279,7 +279,7 @@ func TestProductService_Delete(t *testing.T) {
 			inputID: 1,
 			mockSetup: func(r *mocks.ProductRepo, c *mocks.Cache) {
 				r.EXPECT().Delete(mock.Anything, int64(1)).Return(nil).Once()
-				c.EXPECT().Delete(mock.Anything, "product:meta:1").Return(nil).Once()
+				c.EXPECT().Delete(mock.Anything, []string{"product:meta:1"}).Return(nil).Once()
 			},
 			expectedError: nil,
 		},

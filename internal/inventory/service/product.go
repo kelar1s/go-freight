@@ -10,14 +10,12 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
-//go:generate mockery --name=Cache --output=./mocks --outpkg=mocks --with-expecter=true
 type Cache interface {
 	Get(ctx context.Context, key string, dest any) error
 	Set(ctx context.Context, key string, value any, ttl time.Duration) error
 	Delete(ctx context.Context, keys ...string) error
 }
 
-//go:generate mockery --name=ProductRepo --output=./mocks --outpkg=mocks --with-expecter=true
 type ProductRepo interface {
 	Create(ctx context.Context, product *model.Product) error
 	GetMeta(ctx context.Context, id int64) (*model.ProductMeta, error)

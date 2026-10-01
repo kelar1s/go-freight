@@ -14,7 +14,6 @@ import (
 	"github.com/kelar1s/go-freight/internal/pkg/middleware/logger"
 )
 
-//go:generate mockery --name=WarehouseService --output=./mocks --outpkg=mocks --with-expecter=true
 type WarehouseService interface {
 	Create(ctx context.Context, name string, location string) (*model.Warehouse, error)
 	Get(ctx context.Context, id int64) (*model.Warehouse, error)

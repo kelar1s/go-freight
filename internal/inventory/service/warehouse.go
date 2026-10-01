@@ -10,7 +10,6 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
-//go:generate mockery --name=WarehouseRepo --output=./mocks --outpkg=mocks --with-expecter=true
 type WarehouseRepo interface {
 	Create(ctx context.Context, warehouse *model.Warehouse) error
 	Get(ctx context.Context, id int64) (*model.Warehouse, error)
