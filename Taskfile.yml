@@ -1,37 +1,45 @@
 version: '3'
-
 dotenv: ['.env']
 
 vars:
   CONFIG_PATH: './config/local.yaml'
   APP_ENTRY: 'cmd/inventory/main.go'
-  DOCKER_CONFIG: 'docker-compose.yml'
+  COMPOSE_FILE: 'docker-compose.yml'
   DB_DSN: "user=postgres password={{.DB_PASSWORD}} dbname=gofreight host=localhost port=5433 sslmode=disable"
   MIGRATIONS_DIR: "db/migrations/inventory"
 
 tasks:
   default:
+    desc: "Показать список доступных задач"
     cmds:
       - task --list
     silent: true
 
   up:
-    desc: "Собрать и поднять всё в Docker (с пересборкой)"
+    desc: "Поднять сервисы в Docker"
     cmds:
-      - docker compose up -d --build
+      - docker compose -f {{.COMPOSE_FILE}} up -d
+
+  up:build:
+    desc: "Пересобрать образы и поднять сервисы в Docker"
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} up -d --build
 
   obs:
     desc: "Поднять стек наблюдаемости (Tempo, Loki, Prometheus, Grafana)"
     cmds:
-      - docker compose up -d tempo loki prometheus grafana
+      - docker compose -f {{.COMPOSE_FILE}} up -d tempo loki prometheus grafana
 
   infra:
     desc: "Поднять базу, кэш и наблюдаемость для локальной разработки"
     cmds:
-      - docker compose up -d db redis tempo loki prometheus grafana
+      - docker compose -f {{.COMPOSE_FILE}} up -d db redis tempo loki prometheus grafana
       
   migrate-create:
     desc: "Создать новый файл миграции: task migrate-create -- name_of_migration"
+    preconditions:
+      - sh: '[ -n "{{.CLI_ARGS}}" ]'
+        msg: "Укажите имя миграции: task migrate-create -- name_of_migration"
     cmds:
       - goose -dir {{.MIGRATIONS_DIR}} create {{.CLI_ARGS}} sql
       
@@ -53,7 +61,7 @@ tasks:
   down:
     desc: "Остановить и удалить контейнеры и сети"
     cmds:
-      - docker compose down
+      - docker compose -f {{.COMPOSE_FILE}} down
 
   logs:
     desc: "Смотреть логи приложения в реальном времени"
@@ -73,9 +81,8 @@ tasks:
   cover:
     desc: "Покрытие кода в браузере"
     cmds:
-      - go test -coverprofile=coverage.out ./...
-      - go tool cover -html=coverage.out
-      - rm coverage.out
+      - go test -coverprofile=/tmp/gofreight_coverage.out ./...
+      - go tool cover -html=/tmp/gofreight_coverage.out
 
   swagger:
     desc: "Сгенерировать документацию Swagger (OpenAPI)"
