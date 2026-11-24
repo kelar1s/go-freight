@@ -31,3 +31,4 @@ go.work.sum
 .vscode/
 
 config/local.yaml
+.DS_Store
