@@ -92,18 +92,20 @@ func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, err
 	err := s.cache.Get(ctx, key, &meta)
 	if err != nil {
 		val, sfErr, _ := s.sf.Do(key, func() (any, error) {
-			var cachedMeta *model.ProductMeta
-			if cerr := s.cache.Get(ctx, key, &cachedMeta); cerr == nil {
-				return cachedMeta, nil
-			}
 			detachedCtx := context.WithoutCancel(ctx)
 			timeoutCtx, cancel := context.WithTimeout(detachedCtx, 3*time.Second)
 			defer cancel()
+
+			var cachedMeta *model.ProductMeta
+			if cerr := s.cache.Get(timeoutCtx, key, &cachedMeta); cerr == nil {
+				return cachedMeta, nil
+			}
+
 			repoMeta, err := s.repo.GetMeta(timeoutCtx, id)
 			if err != nil {
 				return nil, err
 			}
-			_ = s.cache.Set(ctx, key, repoMeta, s.cacheTTL)
+			_ = s.cache.Set(timeoutCtx, key, repoMeta, s.cacheTTL)
 			return repoMeta, nil
 		})
 		if sfErr != nil {
