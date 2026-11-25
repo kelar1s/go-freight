@@ -183,6 +183,19 @@ func (d *diContainer) ProductHandler(ctx context.Context) (*rest.ProductHandler,
 	return d.productHandler, nil
 }
 
+func (d *diContainer) HealthHandler(ctx context.Context) (*rest.HealthHandler, error) {
+	if d.healthHandler == nil {
+		if _, err := d.DB(ctx); err != nil {
+			return nil, err
+		}
+		if _, err := d.Redis(ctx); err != nil {
+			return nil, err
+		}
+		d.healthHandler = rest.NewHealthHandler(d.health, d.log)
+	}
+	return d.healthHandler, nil
+}
+
 func (d *diContainer) Router(ctx context.Context) (http.Handler, error) {
 	if d.router == nil {
 		ph, err := d.ProductHandler(ctx)
@@ -203,17 +216,4 @@ func (d *diContainer) Router(ctx context.Context) (http.Handler, error) {
 		d.router = rest.NewRouter(ph, wh, hh, d.log)
 	}
 	return d.router, nil
-}
-
-func (d *diContainer) HealthHandler(ctx context.Context) (*rest.HealthHandler, error) {
-	if d.healthHandler == nil {
-		if _, err := d.DB(ctx); err != nil {
-			return nil, err
-		}
-		if _, err := d.Redis(ctx); err != nil {
-			return nil, err
-		}
-		d.healthHandler = rest.NewHealthHandler(d.health, d.log)
-	}
-	return d.healthHandler, nil
 }

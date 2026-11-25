@@ -46,7 +46,7 @@ func New() func(next http.Handler) http.Handler {
 					}
 				}
 
-				if ww.Status() == http.StatusNotFound {
+				if route == "unknown" && ww.Status() == http.StatusNotFound {
 					route = "404_not_found"
 				}
 

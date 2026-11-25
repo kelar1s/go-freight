@@ -87,7 +87,7 @@ func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, err
 	}
 
 	key := productMetaCacheKey(id)
-	var meta *model.ProductMeta
+	var meta model.ProductMeta
 
 	err := s.cache.Get(ctx, key, &meta)
 	if err != nil {
@@ -96,7 +96,7 @@ func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, err
 			timeoutCtx, cancel := context.WithTimeout(detachedCtx, 3*time.Second)
 			defer cancel()
 
-			var cachedMeta *model.ProductMeta
+			var cachedMeta model.ProductMeta
 			if cerr := s.cache.Get(timeoutCtx, key, &cachedMeta); cerr == nil {
 				return cachedMeta, nil
 			}
@@ -106,12 +106,12 @@ func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, err
 				return nil, err
 			}
 			_ = s.cache.Set(timeoutCtx, key, repoMeta, s.cacheTTL)
-			return repoMeta, nil
+			return *repoMeta, nil
 		})
 		if sfErr != nil {
 			return nil, fmt.Errorf("%s: %w", op, sfErr)
 		}
-		meta = val.(*model.ProductMeta)
+		meta = val.(model.ProductMeta)
 	}
 
 	stock, err := s.repo.GetStock(ctx, id)
@@ -120,7 +120,7 @@ func (s *ProductService) Get(ctx context.Context, id int64) (*model.Product, err
 	}
 
 	return &model.Product{
-		ProductMeta:  *meta,
+		ProductMeta:  meta,
 		ProductStock: *stock,
 	}, nil
 }

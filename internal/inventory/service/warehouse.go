@@ -66,7 +66,7 @@ func (s *WarehouseService) Get(ctx context.Context, id int64) (*model.Warehouse,
 	}
 
 	key := warehouseCacheKey(id)
-	var warehouse *model.Warehouse
+	var warehouse model.Warehouse
 
 	err := s.cache.Get(ctx, key, &warehouse)
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *WarehouseService) Get(ctx context.Context, id int64) (*model.Warehouse,
 			timeoutCtx, cancel := context.WithTimeout(detachedCtx, 3*time.Second)
 			defer cancel()
 
-			var cachedData *model.Warehouse
+			var cachedData model.Warehouse
 			if cErr := s.cache.Get(timeoutCtx, key, &cachedData); cErr == nil {
 				return cachedData, nil
 			}
@@ -85,15 +85,15 @@ func (s *WarehouseService) Get(ctx context.Context, id int64) (*model.Warehouse,
 				return nil, err
 			}
 			_ = s.cache.Set(timeoutCtx, key, repoData, s.cacheTTL)
-			return repoData, nil
+			return *repoData, nil
 		})
 		if sfErr != nil {
 			return nil, fmt.Errorf("%s: %w", op, sfErr)
 		}
-		warehouse = val.(*model.Warehouse)
+		warehouse = val.(model.Warehouse)
 	}
 
-	return warehouse, nil
+	return &warehouse, nil
 
 }
 

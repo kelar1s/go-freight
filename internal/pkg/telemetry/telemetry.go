@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -62,10 +63,13 @@ func Init(ctx context.Context, serviceName, tempoEndpoint string) (func(context.
 	shutdown := func(shutdownCtx context.Context) error {
 		var err error
 		if shutdownErr := tracerProvider.Shutdown(shutdownCtx); shutdownErr != nil {
-			err = fmt.Errorf("tracer provider shutdown error: %w", shutdownErr)
+			err = errors.Join(err, fmt.Errorf("tracer provider shutdown error: %w", shutdownErr))
 		}
 		if shutdownErr := meterProvider.Shutdown(shutdownCtx); shutdownErr != nil {
-			err = fmt.Errorf("meter provider shutdown error: %w", shutdownErr)
+			err = errors.Join(err, fmt.Errorf("meter provider shutdown error: %w", shutdownErr))
+		}
+		if closeErr := conn.Close(); closeErr != nil {
+			err = errors.Join(err, fmt.Errorf("tempo grpc conn close error: %w", closeErr))
 		}
 		return err
 	}

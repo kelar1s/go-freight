@@ -9,14 +9,14 @@ database:
   host: "localhost"
   port: 5433
   user: "postgres"
-  password: "${DB_PASSWORD}"
+  password: ""
   db_name: "gofreight"
   ssl_mode: "disable"
 
 redis:
   host: "localhost"
   port: 6379
-  password: "${REDIS_PASSWORD}"
+  password: ""
   db: 0
   ttl: "5m"
   dial_timeout: "1s"

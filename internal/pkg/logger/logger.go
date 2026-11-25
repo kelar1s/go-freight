@@ -59,5 +59,8 @@ func Setup(env string) *slog.Logger {
 }
 
 func Err(err error) slog.Attr {
+	if err == nil {
+		return slog.String("error", "")
+	}
 	return slog.String("error", err.Error())
 }

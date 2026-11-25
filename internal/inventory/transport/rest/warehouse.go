@@ -213,6 +213,7 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success      204  "No Content"
 // @Failure      400  {object} dto.ErrorResponse
 // @Failure      404  {object} dto.ErrorResponse
+// @Failure      409  {object} dto.ErrorResponse
 // @Failure      500  {object} dto.ErrorResponse
 // @Router       /warehouses/{id} [delete]
 func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {

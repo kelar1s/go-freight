@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ENV=env
+      - ENV=prod
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
