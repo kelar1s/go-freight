@@ -237,6 +237,9 @@ func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, model.ErrWarehouseNotFound):
 			log.WarnContext(r.Context(), "warehouse not found")
 			WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, model.ErrWarehouseNotEmpty):
+			log.WarnContext(r.Context(), "warehouse is not empty")
+			WriteError(w, http.StatusConflict, err.Error())
 		default:
 			log.ErrorContext(r.Context(), "delete warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")

@@ -62,7 +62,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	product, err := h.service.Create(r.Context(), req.WarehouseID, req.Name, req.Quantity)
 	if err != nil {
 		switch {
-		case errors.Is(err, model.ErrInvalidWarehouseID), errors.Is(err, model.ErrInvalidQuantity), errors.Is(err, model.ErrEmptyProductName):
+		case errors.Is(err, model.ErrInvalidWarehouseID), errors.Is(err, model.ErrInvalidQuantity), errors.Is(err, model.ErrEmptyProductName), errors.Is(err, model.ErrWarehouseNotFound):
 			log.WarnContext(r.Context(), "invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
 		default:

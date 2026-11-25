@@ -7,6 +7,7 @@ var (
 	ErrEmptyWarehouseLocation = errors.New("warehouse location cannot be empty")
 	ErrInvalidWarehouseID     = errors.New("invalid warehouse id")
 	ErrWarehouseNotFound      = errors.New("warehouse not found")
+	ErrWarehouseNotEmpty      = errors.New("warehouse contains products and cannot be deleted")
 
 	ErrInvalidQuantity   = errors.New("invalid product quantity")
 	ErrEmptyProductName  = errors.New("product name cannot be empty")

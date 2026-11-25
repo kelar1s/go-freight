@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kelar1s/go-freight/internal/inventory/model"
 	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
@@ -42,6 +43,9 @@ func (r *ProductRepo) Create(ctx context.Context, product *model.Product) error 
 		Name:        product.Name,
 	})
 	if err != nil {
+		if pgxErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgxErr.Code == pgerrcode.ForeignKeyViolation {
+			return fmt.Errorf("%s: %w", op, model.ErrWarehouseNotFound)
+		}
 		return fmt.Errorf("%s: create meta: %w", op, err)
 	}
 
@@ -188,7 +192,7 @@ func handleStockError(op string, err error) error {
 		return fmt.Errorf("%s: %w", op, model.ErrProductNotFound)
 	}
 	if pgxErr, ok := errors.AsType[*pgconn.PgError](err); ok {
-		if pgxErr.Code == "23514" {
+		if pgxErr.Code == pgerrcode.CheckViolation {
 			return fmt.Errorf("%s: %w", op, model.ErrNotEnoughQuantity)
 		}
 	}

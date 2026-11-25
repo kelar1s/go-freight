@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kelar1s/go-freight/internal/inventory/model"
 	"github.com/kelar1s/go-freight/internal/inventory/repository/pg"
 )
@@ -96,6 +98,9 @@ func (r *WarehouseRepo) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("%s: %w", op, model.ErrWarehouseNotFound)
+		}
+		if pgxErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgxErr.Code == pgerrcode.ForeignKeyViolation {
+			return fmt.Errorf("%s: %w", op, model.ErrWarehouseNotEmpty)
 		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
