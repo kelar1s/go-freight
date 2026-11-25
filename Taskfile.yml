@@ -69,7 +69,7 @@ tasks:
       - docker logs -f gofreight_inventory
 
   run:
-    desc: "Запустить сервер локально (нужен поднятый 'task db')"
+    desc: "Запустить сервер локально (нужен поднятый 'task infra')"
     cmds:
       - CONFIG_PATH={{.CONFIG_PATH}} go run {{.APP_ENTRY}}
 
