@@ -29,6 +29,14 @@ func (h otelHandler) Handle(ctx context.Context, r slog.Record) error {
 	return h.Handler.Handle(ctx, r)
 }
 
+func (h otelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return otelHandler{Handler: h.Handler.WithAttrs(attrs)}
+}
+
+func (h otelHandler) WithGroup(name string) slog.Handler {
+	return otelHandler{Handler: h.Handler.WithGroup(name)}
+}
+
 func Setup(env string) *slog.Logger {
 	var baseHandler slog.Handler
 

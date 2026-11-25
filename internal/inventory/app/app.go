@@ -51,11 +51,12 @@ func (a *App) initDeps(ctx context.Context) error {
 	}
 
 	a.httpServer = &http.Server{
-		Addr:         a.cfg.HTTPServer.Address,
-		Handler:      router,
-		ReadTimeout:  a.cfg.HTTPServer.Timeout,
-		WriteTimeout: a.cfg.HTTPServer.Timeout,
-		IdleTimeout:  a.cfg.HTTPServer.IdleTimeout,
+		Addr:              a.cfg.HTTPServer.Address,
+		Handler:           router,
+		ReadTimeout:       a.cfg.HTTPServer.Timeout,
+		WriteTimeout:      a.cfg.HTTPServer.Timeout,
+		IdleTimeout:       a.cfg.HTTPServer.IdleTimeout,
+		ReadHeaderTimeout: a.cfg.HTTPServer.Timeout,
 	}
 
 	return nil
@@ -91,7 +92,7 @@ func (a *App) Run() error {
 	defer shutdownCancel()
 
 	if err := a.httpServer.Shutdown(shutdownCtx); err != nil {
-		runErr = errors.Join(fmt.Errorf("failed to stop http server: %w", err))
+		runErr = errors.Join(runErr, fmt.Errorf("failed to stop http server: %w", err))
 	} else {
 		a.log.Info("http server gracefully stopped (no active connections)")
 	}
@@ -100,7 +101,7 @@ func (a *App) Run() error {
 	defer closerCancel()
 
 	if err := a.closer.CloseAll(closerCtx); err != nil {
-		runErr = errors.Join(fmt.Errorf("failed to close resources: %w", err))
+		runErr = errors.Join(runErr, fmt.Errorf("failed to close resources: %w", err))
 	}
 
 	return runErr

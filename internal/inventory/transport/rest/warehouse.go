@@ -51,7 +51,7 @@ func (h *WarehouseHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	var req dto.CreateWarehouseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Warn("decode request body", slog.String("error", err.Error()))
+		log.WarnContext(r.Context(), "decode request body", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
@@ -60,10 +60,10 @@ func (h *WarehouseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrEmptyWarehouseName), errors.Is(err, model.ErrEmptyWarehouseLocation):
-			log.Warn("invalid input", slog.String("error", err.Error()))
+			log.WarnContext(r.Context(), "invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
 		default:
-			log.Error("create warehouse", slog.String("error", err.Error()))
+			log.ErrorContext(r.Context(), "create warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
@@ -73,7 +73,7 @@ func (h *WarehouseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Error("encode response", slog.String("error", err.Error()))
+		log.ErrorContext(r.Context(), "encode response", slog.String("error", err.Error()))
 	}
 }
 
@@ -94,7 +94,7 @@ func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		log.Warn("parse warehouse id", slog.String("error", err.Error()))
+		log.WarnContext(r.Context(), "parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
 		return
 	}
@@ -105,13 +105,13 @@ func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidWarehouseID):
-			log.Warn("invalid input", slog.String("error", err.Error()))
+			log.WarnContext(r.Context(), "invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, model.ErrWarehouseNotFound):
-			log.Warn("warehouse not found")
+			log.WarnContext(r.Context(), "warehouse not found")
 			WriteError(w, http.StatusNotFound, err.Error())
 		default:
-			log.Error("get warehouse", slog.String("error", err.Error()))
+			log.ErrorContext(r.Context(), "get warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
@@ -121,7 +121,7 @@ func (h *WarehouseHandler) Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Error("encode response", slog.String("error", err.Error()))
+		log.ErrorContext(r.Context(), "encode response", slog.String("error", err.Error()))
 	}
 }
 
@@ -139,7 +139,7 @@ func (h *WarehouseHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	warehouses, err := h.service.List(r.Context())
 	if err != nil {
-		log.Error("list warehouses", slog.String("error", err.Error()))
+		log.ErrorContext(r.Context(), "list warehouses", slog.String("error", err.Error()))
 		WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
@@ -148,7 +148,7 @@ func (h *WarehouseHandler) List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Error("encode response", slog.String("error", err.Error()))
+		log.ErrorContext(r.Context(), "encode response", slog.String("error", err.Error()))
 	}
 }
 
@@ -170,7 +170,7 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		log.Warn("parse warehouse id", slog.String("error", err.Error()))
+		log.WarnContext(r.Context(), "parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
 		return
 	}
@@ -179,7 +179,7 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	var req dto.UpdateWarehouseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Warn("decode request body", slog.String("error", err.Error()))
+		log.WarnContext(r.Context(), "decode request body", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
@@ -188,16 +188,16 @@ func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrEmptyWarehouseName), errors.Is(err, model.ErrEmptyWarehouseLocation):
-			log.Warn("invalid input", slog.String("error", err.Error()))
+			log.WarnContext(r.Context(), "invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, model.ErrWarehouseNotFound):
-			log.Warn("warehouse not found")
+			log.WarnContext(r.Context(), "warehouse not found")
 			WriteError(w, http.StatusNotFound, err.Error())
 		case errors.Is(err, model.ErrInvalidWarehouseID):
-			log.Warn("invalid warehouse id", slog.String("error", err.Error()))
+			log.WarnContext(r.Context(), "invalid warehouse id", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
 		default:
-			log.Error("update warehouse", slog.String("error", err.Error()))
+			log.ErrorContext(r.Context(), "update warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
@@ -221,7 +221,7 @@ func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	warehouseID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		log.Warn("parse warehouse id", slog.String("error", err.Error()))
+		log.WarnContext(r.Context(), "parse warehouse id", slog.String("error", err.Error()))
 		WriteError(w, http.StatusBadRequest, "invalid warehouse ID format")
 		return
 	}
@@ -232,13 +232,13 @@ func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrInvalidWarehouseID):
-			log.Warn("invalid input", slog.String("error", err.Error()))
+			log.WarnContext(r.Context(), "invalid input", slog.String("error", err.Error()))
 			WriteError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, model.ErrWarehouseNotFound):
-			log.Warn("warehouse not found")
+			log.WarnContext(r.Context(), "warehouse not found")
 			WriteError(w, http.StatusNotFound, err.Error())
 		default:
-			log.Error("delete warehouse", slog.String("error", err.Error()))
+			log.ErrorContext(r.Context(), "delete warehouse", slog.String("error", err.Error()))
 			WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return

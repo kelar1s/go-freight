@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	Env        string     `yaml:"env" env-default:"local"`
+	Env        string     `yaml:"env" env:"ENV" env-default:"local"`
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Database   Database   `yaml:"database"`
 	Redis      Redis      `yaml:"redis"`
@@ -64,18 +64,22 @@ func MustLoad() *Config {
 		log.Println(".env file not found, relying on system env")
 	}
 
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		log.Fatal("CONFIG_PATH is not set")
-	}
-
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
-	}
-
 	var cfg Config
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("can not read the config: %s", err.Error())
+
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath != "" {
+		if _, err := os.Stat(configPath); os.IsNotExist(err) {
+			log.Fatalf("config file does not exist: %s", configPath)
+		}
+		if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+			log.Fatalf("can not read the config: %s", err.Error())
+		}
+		return &cfg
 	}
+
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
+		log.Fatalf("can not read config from env: %s", err.Error())
+	}
+
 	return &cfg
 }

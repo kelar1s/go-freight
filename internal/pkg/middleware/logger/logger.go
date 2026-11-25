@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type loggerKey struct{}
@@ -18,19 +17,12 @@ func New(log *slog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			spanContext := trace.SpanContextFromContext(ctx)
-
-			traceID := ""
-			if spanContext.HasTraceID() {
-				traceID = spanContext.TraceID().String()
-			}
 
 			entry := log.With(
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
 				slog.String("remote_addr", r.RemoteAddr),
 				slog.String("user_agent", r.UserAgent()),
-				slog.String("trace_id", traceID),
 			)
 
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)

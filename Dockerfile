@@ -17,7 +17,6 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates tzdata
 
 COPY --from=builder /bin/gofreight-app ./app
-COPY --from=builder /src/config/ ./config/
 
 EXPOSE 8080
 
