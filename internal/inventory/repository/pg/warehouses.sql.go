@@ -58,7 +58,7 @@ func (q *Queries) GetWarehouse(ctx context.Context, id int64) (Warehouse, error)
 }
 
 const listWarehouses = `-- name: ListWarehouses :many
-SELECT id, name, location, created_at FROM warehouses
+SELECT id, name, location, created_at FROM warehouses ORDER BY id
 `
 
 func (q *Queries) ListWarehouses(ctx context.Context) ([]Warehouse, error) {

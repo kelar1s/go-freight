@@ -5,7 +5,7 @@ INSERT INTO warehouses(name, location) VALUES($1, $2) RETURNING *;
 SELECT * FROM warehouses WHERE id = $1 LIMIT 1;
 
 -- name: ListWarehouses :many
-SELECT * FROM warehouses;
+SELECT * FROM warehouses ORDER BY id;
 
 -- name: UpdateWarehouse :one
 UPDATE warehouses SET name = $2, location = $3 WHERE id = $1 RETURNING id;
