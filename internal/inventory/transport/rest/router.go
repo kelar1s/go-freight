@@ -19,6 +19,7 @@ import (
 func NewRouter(
 	productHandler *ProductHandler,
 	warehouseHandler *WarehouseHandler,
+	healthHandler *HealthHandler,
 	log *slog.Logger,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -26,6 +27,10 @@ func NewRouter(
 	r.Group(func(r chi.Router) {
 		r.Get("/metrics", promhttp.Handler().ServeHTTP)
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
+		if healthHandler != nil {
+			r.Get("/healthz", healthHandler.Live)
+			r.Get("/readyz", healthHandler.Ready)
+		}
 	})
 
 	r.Group(func(r chi.Router) {
@@ -33,10 +38,11 @@ func NewRouter(
 
 		r.Use(otelchi.Middleware("inventory-service", otelchi.WithChiRoutes(r)))
 
+		r.Use(middleware.RealIP)
+
 		r.Use(mwLogger.New(log))
 		r.Use(middleware.Recoverer)
 
-		r.Use(middleware.RealIP)
 		r.Use(middleware.URLFormat)
 
 		r.Route("/api/v1", func(r chi.Router) {

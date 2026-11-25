@@ -14,6 +14,7 @@ import (
 	"github.com/kelar1s/go-freight/internal/pkg/cache"
 	"github.com/kelar1s/go-freight/internal/pkg/closer"
 	"github.com/kelar1s/go-freight/internal/pkg/config"
+	"github.com/kelar1s/go-freight/internal/pkg/health"
 	"github.com/kelar1s/go-freight/internal/pkg/postgres"
 	"github.com/kelar1s/go-freight/internal/pkg/telemetry"
 )
@@ -22,6 +23,7 @@ type diContainer struct {
 	cfg    *config.Config
 	log    *slog.Logger
 	closer *closer.Closer
+	health *health.Checker
 
 	db       *sql.DB
 	logCache *cache.LoggingCache
@@ -34,14 +36,16 @@ type diContainer struct {
 
 	warehouseHandler *rest.WarehouseHandler
 	productHandler   *rest.ProductHandler
+	healthHandler    *rest.HealthHandler
 	router           http.Handler
 }
 
-func newDIContainer(cfg *config.Config, log *slog.Logger, c *closer.Closer) *diContainer {
+func newDIContainer(cfg *config.Config, log *slog.Logger, c *closer.Closer, h *health.Checker) *diContainer {
 	return &diContainer{
 		cfg:    cfg,
 		log:    log,
 		closer: c,
+		health: h,
 	}
 }
 
@@ -54,7 +58,7 @@ func (d *diContainer) InitTelemetry(ctx context.Context) error {
 	d.closer.Add("telemetry", func(ctx context.Context) error {
 		return shutdown(ctx)
 	})
-	
+
 	return nil
 }
 
@@ -69,6 +73,7 @@ func (d *diContainer) DB(ctx context.Context) (*sql.DB, error) {
 		d.closer.Add("postgres", func(_ context.Context) error {
 			return db.Close()
 		})
+		d.health.Add("postgres", db.PingContext)
 		d.db = db
 	}
 	return d.db, nil
@@ -92,8 +97,9 @@ func (d *diContainer) Redis(ctx context.Context) (*cache.LoggingCache, error) {
 		d.closer.Add("redis", func(_ context.Context) error {
 			return redisCache.Close()
 		})
-
-		d.logCache = cache.NewLoggingCache(*redisCache, d.log)
+		logCache := cache.NewLoggingCache(redisCache, d.log)
+		d.health.Add("redis", logCache.Ping)
+		d.logCache = logCache
 	}
 	return d.logCache, nil
 }
@@ -127,12 +133,12 @@ func (d *diContainer) WarehouseService(ctx context.Context) (*service.WarehouseS
 		if err != nil {
 			return nil, err
 		}
-		
+
 		redis, err := d.Redis(ctx)
 		if err != nil {
 			return nil, err
 		}
-		
+
 		d.warehouseService = service.NewWarehouseService(repo, redis, d.cfg.Redis.TTL)
 	}
 	return d.warehouseService, nil
@@ -144,12 +150,12 @@ func (d *diContainer) ProductService(ctx context.Context) (*service.ProductServi
 		if err != nil {
 			return nil, err
 		}
-		
+
 		redis, err := d.Redis(ctx)
 		if err != nil {
 			return nil, err
 		}
-		
+
 		d.productService = service.NewProductService(repo, redis, d.cfg.Redis.TTL)
 	}
 	return d.productService, nil
@@ -183,13 +189,31 @@ func (d *diContainer) Router(ctx context.Context) (http.Handler, error) {
 		if err != nil {
 			return nil, err
 		}
-		
+
 		wh, err := d.WarehouseHandler(ctx)
 		if err != nil {
 			return nil, err
 		}
-		
-		d.router = rest.NewRouter(ph, wh, d.log)
+
+		hh, err := d.HealthHandler(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		d.router = rest.NewRouter(ph, wh, hh, d.log)
 	}
 	return d.router, nil
+}
+
+func (d *diContainer) HealthHandler(ctx context.Context) (*rest.HealthHandler, error) {
+	if d.healthHandler == nil {
+		if _, err := d.DB(ctx); err != nil {
+			return nil, err
+		}
+		if _, err := d.Redis(ctx); err != nil {
+			return nil, err
+		}
+		d.healthHandler = rest.NewHealthHandler(d.health, d.log)
+	}
+	return d.healthHandler, nil
 }

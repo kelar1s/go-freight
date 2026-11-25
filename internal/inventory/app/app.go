@@ -12,6 +12,7 @@ import (
 
 	"github.com/kelar1s/go-freight/internal/pkg/closer"
 	"github.com/kelar1s/go-freight/internal/pkg/config"
+	"github.com/kelar1s/go-freight/internal/pkg/health"
 	"github.com/kelar1s/go-freight/internal/pkg/logger"
 )
 
@@ -21,16 +22,19 @@ type App struct {
 	log         *slog.Logger
 	httpServer  *http.Server
 	closer      *closer.Closer
+	health      *health.Checker
 }
 
 func New(cfg *config.Config, log *slog.Logger) (*App, error) {
 	c := closer.New(log)
+	h := health.New()
 
 	a := &App{
-		diContainer: newDIContainer(cfg, log, c),
+		diContainer: newDIContainer(cfg, log, c, h),
 		cfg:         cfg,
 		log:         log,
 		closer:      c,
+		health:      h,
 	}
 
 	if err := a.initDeps(context.Background()); err != nil {

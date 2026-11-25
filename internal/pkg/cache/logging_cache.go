@@ -10,11 +10,11 @@ import (
 )
 
 type LoggingCache struct {
-	base RedisCache
+	base *RedisCache
 	log  *slog.Logger
 }
 
-func NewLoggingCache(base RedisCache, log *slog.Logger) *LoggingCache {
+func NewLoggingCache(base *RedisCache, log *slog.Logger) *LoggingCache {
 	return &LoggingCache{
 		base: base,
 		log:  log,
@@ -52,4 +52,8 @@ func (c *LoggingCache) Delete(ctx context.Context, keys ...string) error {
 		)
 	}
 	return err
+}
+
+func (c *LoggingCache) Ping(ctx context.Context) error {
+	return c.base.Ping(ctx)
 }

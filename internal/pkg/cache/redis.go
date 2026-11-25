@@ -67,6 +67,10 @@ func (c *RedisCache) Delete(ctx context.Context, keys ...string) error {
 	return c.client.Del(ctx, keys...).Err()
 }
 
+func (c *RedisCache) Ping(ctx context.Context) error {
+	return c.client.Ping(ctx).Err()
+}
+
 func (c *RedisCache) Close() error {
 	return c.client.Close()
 }
